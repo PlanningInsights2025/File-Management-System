@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FMS - Settings</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap CSS (optional but recommended) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== RESET & BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        /* ===== SIDEBAR STYLES ===== */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #2c3e50, #1a2530);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .logo {
+            padding: 0 20px 30px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .logo h2 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .logo h2 i {
+            color: #2196F3;
+            margin-right: 10px;
+        }
+        
+        .logo p {
+            color: #b0b7c3;
+            font-size: 14px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .nav-menu li {
+            margin: 5px 0;
+        }
+        
+        .nav-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #b0b7c3;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-menu li a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: #2196F3;
+        }
+        
+        .nav-menu li.active a {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+            border-left-color: #2196F3;
+        }
+        
+        .nav-menu li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* ===== MAIN CONTENT AREA ===== */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .top-header h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+        
+        .user-info span {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* ===== SETTINGS PAGE SPECIFIC ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0d8bf2;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        /* ===== SETTINGS TABS ===== */
+        .settings-tabs {
+            margin-top: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            padding: 0 20px;
+        }
+        
+        .tab-btn {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab-btn:hover {
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .tab-btn.active {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ===== CARDS ===== */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+        
+        .card-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .card-body {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        /* ===== SEARCH INPUT ===== */
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 250px;
+            font-size: 14px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        /* ===== DATA TABLE ===== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+        
+        .data-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-badge.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-badge.inactive {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-badge.maintenance {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-badge.full {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .status-badge.pending {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .status-badge.suspended {
+            background: #eceff1;
+            color: #546e7a;
+        }
+        
+        /* ===== ROLE BADGES ===== */
+        .role-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .role-badge.admin {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .role-badge.manager {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .role-badge.user {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .role-badge.viewer {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        /* ===== ACTION BUTTONS ===== */
+        .btn-icon {
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 0 2px;
+            color: #666;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-icon:hover {
+            background: #f5f5f5;
+        }
+        
+        .btn-icon.edit:hover {
+            color: #2196F3;
+            background: rgba(33, 150, 243, 0.1);
+        }
+        
+        .btn-icon.delete:hover {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+        
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .close-modal {
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            line-height: 1;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* ===== FORM STYLES ===== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33,150,243,0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .logo h2 span,
+            .sidebar .logo p,
+            .nav-menu li a span {
+                display: none;
+            }
+            
+            .sidebar .logo h2 {
+                font-size: 18px;
+                text-align: center;
+            }
+            
+            .nav-menu li a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .nav-menu li a i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .top-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .tab-buttons {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 0 10px;
+            }
+            
+            .tab-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+            }
+            
+            .data-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .modal-footer {
+                flex-direction: column;
+            }
+            
+            .modal-footer .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .modal-footer .btn:last-child {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2><i class="fas fa-folder"></i> <span>FMS</span></h2>
+            <p>File Management System</p>
+        </div>
+        
+        <ul class="nav-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+            <li><a href="#"><i class="fas fa-plus-circle"></i> <span>Create File</span></a></li>
+            <li><a href="#"><i class="fas fa-list"></i> <span>File List</span></a></li>
+            <li><a href="#"><i class="fas fa-search"></i> <span>Scan File</span></a></li>
+            <li><a href="#"><i class="fas fa-history"></i> <span>Movement History</span></a></li>
+            <li><a href="#"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+            <li class="active"><a href="settings.html"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li><a href="#"><i class="fas fa-users"></i> <span>Users</span></a></li>
+            <li><a href="#"><i class="fas fa-building"></i> <span>Companies</span></a></li>
+            <li><a href="#"><i class="fas fa-archive"></i> <span>Racks</span></a></li>
+            <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <h1>Settings</h1>
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name=John+Doe&background=2196F3&color=fff&size=100" alt="User">
+                <span>John Doe (Admin)</span>
+            </div>
+        </header>
+
+        <!-- Settings Header -->
+        <div class="page-header">
+            <div>
+                <h2 style="color: #333; font-weight: 400;">Manage System Settings</h2>
+                <p style="color: #666; margin-top: 5px;">Configure racks, companies, and users</p>
+            </div>
+            <button class="btn btn-primary" id="addNewBtn">+ Add New</button>
+        </div>
+
+        <!-- Settings Tabs -->
+        <div class="settings-tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="racks">Racks</button>
+                <button class="tab-btn" data-tab="companies">Companies</button>
+                <button class="tab-btn" data-tab="users">Users</button>
+            </div>
+
+            <!-- Racks Section -->
+            <div id="racks-tab" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Rack Management</h3>
+                        <input type="text" class="search-input" placeholder="Search racks..." id="searchRacks">
+                    </div>
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Rack ID</th>
+                                    <th>Rack Name</th>
+                                    <th>Location</th>
+                                    <th>Capacity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="racks-table-body">
+                                <!-- Data will be loaded by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Companies Section -->
+            <div id="companies-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Company Management</h3>
+                        <input type="text" class="search-input" placeholder="Search companies..." id="searchCompanies">
+                    </div>
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Company ID</th>
+                                    <th>Company Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="companies-table-body">
+                                <!-- Data will be loaded by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>User Management</h3>
+                        <input type="text" class="search-input" placeholder="Search users..." id="searchUsers">
+                    </div>
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Company</th>
+                                    <th>Last Login</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Data will be loaded by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="modal-form">
+                    <!-- Form fields will be dynamically loaded -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary cancel-btn">Cancel</button>
+                <button class="btn btn-primary submit-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ==================== MAIN SETTINGS SCRIPT ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Settings page loaded successfully!');
+            
+            // ========== TAB SWITCHING ==========
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Function to switch tabs
+            function switchTab(tabName) {
+                console.log(`Switching to: ${tabName}`);
+                
+                // Remove active class from all tabs
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to selected tab
+                const activeTabBtn = document.querySelector(`[data-tab="${tabName}"]`);
+                const activeTabContent = document.getElementById(`${tabName}-tab`);
+                
+                if (activeTabBtn) activeTabBtn.classList.add('active');
+                if (activeTabContent) activeTabContent.classList.add('active');
+                
+                // Update "Add New" button text
+                const addNewBtn = document.getElementById('addNewBtn');
+                if (addNewBtn) {
+                    addNewBtn.textContent = `+ Add New ${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`;
+                    addNewBtn.dataset.currentTab = tabName;
+                }
+                
+                // Load data for the selected tab
+                loadTabData(tabName);
+            }
+            
+            // Add click events to tab buttons
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                    
+                    // Store last active tab
+                    localStorage.setItem('lastActiveTab', tabId);
+                });
+            });
+            
+            // ========== MODAL FUNCTIONS ==========
+            const modal = document.getElementById('modal');
+            const addNewBtn = document.getElementById('addNewBtn');
+            const closeModal = document.querySelector('.close-modal');
+            const cancelBtn = document.querySelector('.cancel-btn');
+            const submitBtn = document.querySelector('.submit-btn');
+            
+            // Open modal when "Add New" button is clicked
+            if (addNewBtn) {
+                addNewBtn.addEventListener('click', function() {
+                    const currentTab = this.dataset.currentTab || 'racks';
+                    openModal('add', currentTab);
+                });
+            }
+            
+            // Close modal functions
+            if (closeModal) {
+                closeModal.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            }
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // ========== SEARCH FUNCTIONALITY ==========
+            const searchInputs = document.querySelectorAll('.search-input');
+            searchInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const tableId = this.id.replace('search', '').toLowerCase();
+                    const tableBody = document.getElementById(`${tableId}-table-body`);
+                    
+                    if (tableBody) {
+                        const rows = tableBody.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            row.style.display = text.includes(searchTerm) ? '' : 'none';
+                        });
+                    }
+                });
+            });
+            
+            // ========== INITIAL LOAD ==========
+            // Check for last active tab or default to 'racks'
+            const lastActiveTab = localStorage.getItem('lastActiveTab') || 'racks';
+            switchTab(lastActiveTab);
+            
+            // Load initial data
+            loadAllData();
+            
+            console.log('All event listeners attached successfully!');
+        });
+        
+        // ========== DATA FUNCTIONS ==========
+        function loadTabData(tab) {
+            console.log(`Loading ${tab} data...`);
+            
+            // Mock data for demonstration
+            if (tab === 'racks') {
+                loadRacksData();
+            } else if (tab === 'companies') {
+                loadCompaniesData();
+            } else if (tab === 'users') {
+                loadUsersData();
+            }
+        }
+        
+        function loadAllData() {
+            loadRacksData();
+            loadCompaniesData();
+            loadUsersData();
+        }
+        
+        function loadRacksData() {
+            const racks = [
+                { id: 'RACK-001', name: 'Main Rack A', location: 'Room 101', capacity: 100, used: 45, status: 'active' },
+                { id: 'RACK-002', name: 'Archive Rack B', location: 'Basement', capacity: 200, used: 120, status: 'active' },
+                { id: 'RACK-003', name: 'Temporary Rack', location: 'Corridor', capacity: 50, used: 50, status: 'full' },
+                { id: 'RACK-004', name: 'Digital Archive', location: 'Server Room', capacity: 500, used: 320, status: 'active' },
+                { id: 'RACK-005', name: 'Legal Documents', location: 'Room 205', capacity: 80, used: 80, status: 'full' },
+                { id: 'RACK-006', name: 'HR Records', location: 'Floor 3', capacity: 150, used: 90, status: 'active' },
+                { id: 'RACK-007', name: 'Finance Files', location: 'Accounting Dept', capacity: 120, used: 85, status: 'active' }
+            ];
+            
+            const tableBody = document.getElementById('racks-table-body');
+            if (!tableBody) return;
+            
+            let html = '';
+            racks.forEach(rack => {
+                html += `
+                    <tr>
+                        <td><strong>${rack.id}</strong></td>
+                        <td>${rack.name}</td>
+                        <td>${rack.location}</td>
+                        <td>${rack.used}/${rack.capacity}</td>
+                        <td><span class="status-badge ${rack.status}">${rack.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn-icon edit" onclick="openModal('edit', 'racks', '${rack.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteItem('racks', '${rack.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function loadCompaniesData() {
+            const companies = [
+                { id: 'COMP-001', name: 'ABC Corporation', contactPerson: 'John Smith', email: 'john@abccorp.com', phone: '+1-555-1234', status: 'active' },
+                { id: 'COMP-002', name: 'XYZ Ltd', contactPerson: 'Sarah Johnson', email: 'sarah@xyz.com', phone: '+1-555-5678', status: 'active' },
+                { id: 'COMP-003', name: 'Tech Solutions Inc', contactPerson: 'Mike Wilson', email: 'mike@techsolutions.com', phone: '+1-555-9012', status: 'active' },
+                { id: 'COMP-004', name: 'Global Enterprises', contactPerson: 'Emma Davis', email: 'emma@global.com', phone: '+1-555-3456', status: 'inactive' },
+                { id: 'COMP-005', name: 'Innovate Co.', contactPerson: 'David Brown', email: 'david@innovate.com', phone: '+1-555-7890', status: 'active' }
+            ];
+            
+            const tableBody = document.getElementById('companies-table-body');
+            if (!tableBody) return;
+            
+            let html = '';
+            companies.forEach(company => {
+                html += `
+                    <tr>
+                        <td><strong>${company.id}</strong></td>
+                        <td>${company.name}</td>
+                        <td>${company.contactPerson}</td>
+                        <td>${company.email}</td>
+                        <td>${company.phone}</td>
+                        <td><span class="status-badge ${company.status}">${company.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn-icon edit" onclick="openModal('edit', 'companies', '${company.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteItem('companies', '${company.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        function loadUsersData() {
+            const users = [
+                { id: 'USER-001', fullName: 'John Doe', email: 'john@admin.com', role: 'Admin', company: 'ABC Corporation', lastLogin: '2024-01-15 10:30 AM', status: 'active' },
+                { id: 'USER-002', fullName: 'Mike Wilson', email: 'mike@user.com', role: 'User', company: 'XYZ Ltd', lastLogin: '2024-01-14 02:15 PM', status: 'active' },
+                { id: 'USER-003', fullName: 'Sarah Johnson', email: 'sarah@manager.com', role: 'Manager', company: 'Tech Solutions Inc', lastLogin: '2024-01-13 09:45 AM', status: 'active' },
+                { id: 'USER-004', fullName: 'Emma Davis', email: 'emma@viewer.com', role: 'Viewer', company: 'Global Enterprises', lastLogin: '2024-01-12 04:20 PM', status: 'inactive' },
+                { id: 'USER-005', fullName: 'David Brown', email: 'david@innovate.com', role: 'Admin', company: 'Innovate Co.', lastLogin: '2024-01-11 11:00 AM', status: 'active' }
+            ];
+            
+            const tableBody = document.getElementById('users-table-body');
+            if (!tableBody) return;
+            
+            let html = '';
+            users.forEach(user => {
+                html += `
+                    <tr>
+                        <td><strong>${user.id}</strong></td>
+                        <td>${user.fullName}</td>
+                        <td>${user.email}</td>
+                        <td><span class="role-badge ${user.role.toLowerCase()}">${user.role}</span></td>
+                        <td>${user.company}</td>
+                        <td>${user.lastLogin}</td>
+                        <td><span class="status-badge ${user.status}">${user.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn-icon edit" onclick="openModal('edit', 'users', '${user.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteItem('users', '${user.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
+        }
+        
+        // ========== MODAL FUNCTIONS ==========
+        function openModal(action, type, id = null) {
+            console.log(`Opening modal: ${action} ${type} ${id || ''}`);
+            
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalForm = document.getElementById('modal-form');
+            
+            // Set modal title
+            modalTitle.textContent = `${action === 'add' ? 'Add New' : 'Edit'} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            
+            // Generate form based on type
+            let formHtml = '';
+            
+            if (type === 'racks') {
+                formHtml = `
+                    <div class="form-group">
+                        <label for="rackName">Rack Name *</label>
+                        <input type="text" id="rackName" name="rackName" required placeholder="Enter rack name">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location *</label>
+                        <input type="text" id="location" name="location" required placeholder="Enter location">
+                    </div>
+                    <div class="form-group">
+                        <label for="capacity">Capacity *</label>
+                        <input type="number" id="capacity" name="capacity" required placeholder="Enter capacity" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Optional description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="maintenance">Under Maintenance</option>
+                            <option value="full">Full</option>
+                        </select>
+                    </div>
+                `;
+            } else if (type === 'companies') {
+                formHtml = `
+                    <div class="form-group">
+                        <label for="companyName">Company Name *</label>
+                        <input type="text" id="companyName" name="companyName" required placeholder="Enter company name">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactPerson">Contact Person *</label>
+                        <input type="text" id="contactPerson" name="contactPerson" required placeholder="Enter contact person">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <textarea id="address" name="address" rows="3" placeholder="Enter address"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                `;
+            } else if (type === 'users') {
+                formHtml = `
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" name="fullName" required placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role *</label>
+                        <select id="role" name="role">
+                            <option value="Admin">Admin</option>
+                            <option value="Manager">Manager</option>
+                            <option value="User">User</option>
+                            <option value="Viewer">Viewer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="company">Company</label>
+                        <select id="company" name="company">
+                            <option value="">Select Company</option>
+                            <option value="ABC Corporation">ABC Corporation</option>
+                            <option value="XYZ Ltd">XYZ Ltd</option>
+                            <option value="Tech Solutions Inc">Tech Solutions Inc</option>
+                            <option value="Global Enterprises">Global Enterprises</option>
+                            <option value="Innovate Co.">Innovate Co.</option>
+                        </select>
+                    </div>
+                    ${action === 'add' ? `
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm password">
+                    </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+                `;
+            }
+            
+            modalForm.innerHTML = formHtml;
+            modal.style.display = 'block';
+            
+            // If editing, load existing data
+            if (action === 'edit' && id) {
+                // In a real app, you would fetch data from server
+                // For demo, we'll fill with sample data
+                setTimeout(() => {
+                    const inputs = modalForm.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        if (input.name === 'rackName') input.value = 'Sample Rack';
+                        if (input.name === 'location') input.value = 'Room 101';
+                        if (input.name === 'capacity') input.value = '100';
+                        if (input.name === 'companyName') input.value = 'Sample Company';
+                        if (input.name === 'contactPerson') input.value = 'John Doe';
+                        if (input.name === 'email') input.value = 'sample@example.com';
+                        if (input.name === 'fullName') input.value = 'John Doe';
+                        if (input.name === 'role') input.value = 'Admin';
+                        if (input.name === 'company') input.value = 'ABC Corporation';
+                        if (input.name === 'status') input.value = 'active';
+                    });
+                }, 100);
+            }
+            
+            // Add submit handler
+            const submitBtn = document.querySelector('.submit-btn');
+            if (submitBtn) {
+                submitBtn.onclick = function(e) {
+                    e.preventDefault();
+                    handleFormSubmit(action, type, id);
+                };
+            }
+        }
+        
+        function handleFormSubmit(action, type, id) {
+            console.log(`Form submitted: ${action} ${type} ${id || ''}`);
+            
+            // Here you would typically send data to server via AJAX
+            // For demo, we'll just show an alert
+            
+            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} ${action === 'add' ? 'added' : 'updated'} successfully!`);
+            
+            // Close modal
+            document.getElementById('modal').style.display = 'none';
+            
+            // Reload data
+            const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+            loadTabData(activeTab);
+        }
+        
+        function deleteItem(type, id) {
+            if (confirm(`Are you sure you want to delete this ${type.slice(0, -1)}? This action cannot be undone.`)) {
+                console.log(`Deleting ${type}: ${id}`);
+                
+                // Here you would typically send delete request to server
+                // For demo, we'll just show an alert
+                
+                alert(`${type.charAt(0).toUpperCase() + type.slice(1, -1)} deleted successfully!`);
+                
+                // Reload data
+                const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+                loadTabData(activeTab);
+            }
+        }
+    </script>
+</body>
+</html>

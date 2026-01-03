@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Barcode - A5</title>
+    <!-- Barcode Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <style>
+        /* A5 size: 148mm x 210mm */
+        @page {
+            size: A5;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 148mm;
+            height: 210mm;
+            padding: 8mm;
+            font-family: 'Arial', sans-serif;
+            background: white;
+            font-size: 10pt;
+        }
+        
+        .container {
+            width: 132mm; /* 148mm - 16mm margins */
+            height: 194mm; /* 210mm - 16mm margins */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 5mm;
+            padding-bottom: 3mm;
+            border-bottom: 1px solid #000;
+        }
+        
+        .header h1 {
+            font-size: 14pt;
+            color: #000;
+            margin-bottom: 1mm;
+        }
+        
+        .header .subtitle {
+            font-size: 8pt;
+            color: #666;
+        }
+        
+        .barcode-container {
+            text-align: center;
+            margin: 3mm 0;
+            padding: 2mm;
+            background: white;
+        }
+        
+        #barcode {
+            width: 100% !important;
+            max-width: 100mm;
+            height: 15mm !important;
+            margin: 0 auto;
+        }
+        
+        .file-info {
+            margin-top: 3mm;
+            padding: 3mm;
+            border: 0.5px solid #000;
+            background: #fff;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 2mm;
+            padding-bottom: 1mm;
+            border-bottom: 0.5px dotted #999;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 30mm;
+            color: #000;
+            font-size: 8pt;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #000;
+            font-size: 8pt;
+        }
+        
+        .file-id {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #000;
+            margin: 2mm 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .footer {
+            margin-top: 3mm;
+            text-align: center;
+            font-size: 7pt;
+            color: #555;
+            padding-top: 2mm;
+            border-top: 0.5px solid #999;
+        }
+        
+        /* Print-specific styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 8mm;
+            }
+            .container {
+                width: 132mm;
+                height: 194mm;
+            }
+        }
+        
+        /* Hide non-print elements when printing */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 8mm;
+                top: 8mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FILE BARCODE LABEL</h1>
+            <div class="subtitle">File Management System</div>
+        </div>
+        
+        <div class="file-id" id="fileId">Loading...</div>
+        
+        <div class="barcode-container">
+            <svg id="barcode"></svg>
+        </div>
+        
+        <div class="file-info">
+            <div class="info-row">
+                <div class="info-label">File Name:</div>
+                <div class="info-value" id="fileName">-</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Company:</div>
+                <div class="info-value" id="companyName">-</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Created By:</div>
+                <div class="info-value" id="createdBy">-</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">File Location:</div>
+                <div class="info-value" id="fileLocation">-</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Creation Date:</div>
+                <div class="info-value" id="creationDate">-</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Purpose:</div>
+                <div class="info-value" id="purpose">-</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Scan this barcode with any barcode scanner to access file details</p>
+            <p>Generated on: <span id="printDate"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Get parameters from URL
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                fileName: params.get('fileName') || 'New File',
+                companyName: params.get('companyName') || 'ABC Corporation',
+                createdBy: params.get('createdBy') || 'Admin',
+                fileLocation: params.get('fileLocation') || 'Rack A - Shelf 1',
+                creationDate: params.get('creationDate') || new Date().toLocaleDateString(),
+                purpose: params.get('purpose') || 'File Purpose',
+                responsiblePerson: params.get('responsiblePerson') || 'Responsible Person',
+                department: params.get('department') || 'General',
+                fileId: params.get('fileId') || 'FMS-2024-001',
+                preparedBySignature: params.get('preparedBySignature') || 'Prepared By',
+                approvedBySignature: params.get('approvedBySignature') || 'Approving Authority',
+                description: params.get('description') || 'No description'
+            };
+        }
+        
+        // Generate real barcode
+        function generateBarcode(fileId) {
+            try {
+                JsBarcode("#barcode", fileId, {
+                    format: "CODE128",
+                    width: 1.2,
+                    height: 30,
+                    displayValue: true,
+                    fontOptions: "bold",
+                    font: "Arial",
+                    textMargin: 2,
+                    fontSize: 10,
+                    background: "#ffffff",
+                    lineColor: "#000000",
+                    margin: 3
+                });
+            } catch (error) {
+                console.error("Barcode generation error:", error);
+                document.getElementById('barcode').innerHTML = 
+                    `<text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="10">${fileId}</text>`;
+            }
+        }
+        
+        // Populate the page with data
+        function populatePage() {
+            const data = getUrlParams();
+            
+            // Fill in the data
+            document.getElementById('fileId').textContent = data.fileId;
+            document.getElementById('fileName').textContent = data.fileName;
+            document.getElementById('companyName').textContent = data.companyName;
+            document.getElementById('createdBy').textContent = data.createdBy;
+            document.getElementById('fileLocation').textContent = data.fileLocation;
+            document.getElementById('creationDate').textContent = data.creationDate;
+            document.getElementById('purpose').textContent = data.purpose;
+            document.getElementById('printDate').textContent = new Date().toLocaleDateString();
+            
+            // Generate barcode
+            generateBarcode(data.fileId);
+        }
+        
+        // Auto-print if parameter is set
+        function checkAutoPrint() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('autoPrint') === 'true') {
+                // Small delay to ensure everything is loaded
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        }
+        
+        // Initialize when page loads
+        window.onload = function() {
+            populatePage();
+            checkAutoPrint();
+        };
+    </script>
+</body>
+</html>

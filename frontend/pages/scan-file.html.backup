@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Scan File - FMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Include html5-qrcode library for barcode scanning -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        #reader {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .camera-controls {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .scanner-active {
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+        }
+        
+        .scan-result {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 10px 0;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .file-history-item {
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .history-in {
+            border-left-color: #28a745;
+        }
+        
+        .history-out {
+            border-left-color: #dc3545;
+        }
+        
+        .camera-selector {
+            max-width: 300px;
+        }
+        
+        .qr-scanner-container {
+            position: relative;
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 2px solid #00ff00;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <i class="fas fa-folder"></i> FMS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a class="nav-link" href="create-file.html"><i class="fas fa-plus-circle"></i> Create File</a>
+                <a class="nav-link" href="file-list.html"><i class="fas fa-list"></i> File List</a>
+                <a class="nav-link active" href="scan-file.html"><i class="fas fa-qrcode"></i> Scan File</a>
+                <a class="nav-link" href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h2><i class="fas fa-qrcode"></i> Scan File QR/Barcode</h2>
+                <p class="text-muted">Use camera to scan file QR codes or enter manually</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Scanner & Manual Search -->
+            <div class="col-lg-6">
+                <!-- Camera Scanner Section -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-camera"></i> Live Camera Scanner</h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="scannerToggle" checked>
+                            <label class="form-check-label" for="scannerToggle">Scanner ON</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Camera Selection -->
+                        <div class="mb-3">
+                            <label for="cameraSelect" class="form-label">Select Camera:</label>
+                            <select class="form-select camera-selector" id="cameraSelect">
+                                <option value="">Loading cameras...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- QR/Barcode Scanner -->
+                        <div class="qr-scanner-container mb-3">
+                            <div id="reader"></div>
+                            <div class="scanner-overlay"></div>
+                        </div>
+                        
+                        <!-- Scan Result -->
+                        <div id="scanResult" class="scan-result d-none">
+                            <i class="fas fa-check-circle"></i> Scanned: <span id="scannedCode"></span>
+                        </div>
+                        
+                        <!-- Camera Controls -->
+                        <div class="camera-controls mt-3">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <button class="btn btn-success" id="startScannerBtn">
+                                    <i class="fas fa-play"></i> Start Scanner
+                                </button>
+                                <button class="btn btn-danger" id="stopScannerBtn" disabled>
+                                    <i class="fas fa-stop"></i> Stop Scanner
+                                </button>
+                                <button class="btn btn-warning" id="switchCameraBtn">
+                                    <i class="fas fa-sync-alt"></i> Switch Camera
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <p class="text-white mb-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Point camera at file QR/barcode. Scanner works on mobile and desktop.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Manual Search Section -->
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-search"></i> Manual Search</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="fileIdInput" class="form-label">Enter File ID:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-barcode"></i>
+                                </span>
+                                <input type="text" class="form-control" id="fileIdInput" placeholder="Enter File ID (e.g., FMS-2024-001)">
+                                <button class="btn btn-primary" type="button" id="searchFileBtn">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="fileNameSearch" class="form-label">Search by File Name:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="fileNameSearch" placeholder="Enter file name">
+                                <button class="btn btn-outline-primary" type="button" id="searchByNameBtn">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="quickSearch" class="form-label">Quick Filters:</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-sm btn-outline-success" id="showInFiles">
+                                    <i class="fas fa-folder-open"></i> Show Available (IN)
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" id="showOutFiles">
+                                    <i class="fas fa-external-link-alt"></i> Show Checked Out (OUT)
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" id="showOverdueFiles">
+                                    <i class="fas fa-clock"></i> Show Overdue
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="mt-4">
+                            <h6><i class="fas fa-bolt"></i> Quick Actions:</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <a href="create-file.html" class="btn btn-primary w-100">
+                                        <i class="fas fa-plus"></i> Create File
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="file-list.html" class="btn btn-success w-100">
+                                        <i class="fas fa-list"></i> File List
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#historyModal">
+                                        <i class="fas fa-history"></i> View History
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                        <i class="fas fa-chart-bar"></i> Reports
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: File Details & Actions -->
+            <div class="col-lg-6">
+                <!-- File Details Section -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-alt"></i> File Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="noFileSelected" class="text-center py-5">
+                            <i class="fas fa-qrcode fa-4x text-muted mb-3"></i>
+                            <h5>No File Selected</h5>
+                            <p class="text-muted">Scan a QR code or search for a file to view details</p>
+                        </div>
+                        
+                        <div id="fileDetails" class="d-none">
+                            <!-- File Header -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h4 id="fileTitleDisplay" class="mb-1"></h4>
+                                            <div>
+                                                <span class="badge bg-primary" id="fileIdDisplay"></span>
+                                                <span class="badge ms-2" id="fileStatusDisplay"></span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary" id="printFileBtn">
+                                                <i class="fas fa-print"></i> Print
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- File Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-building"></i> Company
+                                        </label>
+                                        <p class="mb-0" id="companyDisplay"></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-user"></i> Prepared By
+                                        </label>
+                                        <p class="mb-0" id="preparedByDisplay"></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-user-tag"></i> Responsible Person
+                                        </label>
+                                        <p class="mb-0" id="responsibleDisplay"></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-layer-group"></i> Rack Location
+                                        </label>
+                                        <p class="mb-0" id="rackDisplay"></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-bullseye"></i> Purpose
+                                        </label>
+                                        <p class="mb-0" id="purposeDisplay"></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-calendar"></i> Created Date
+                                        </label>
+                                        <p class="mb-0" id="createdDateDisplay"></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-history"></i> Last Updated
+                                        </label>
+                                        <p class="mb-0" id="updatedDateDisplay"></p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-sitemap"></i> Department
+                                        </label>
+                                        <p class="mb-0" id="departmentDisplay"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- File Description -->
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted mb-1">
+                                            <i class="fas fa-align-left"></i> Description
+                                        </label>
+                                        <div class="border rounded p-3 bg-light" id="descriptionDisplay"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <h6><i class="fas fa-cogs"></i> File Actions:</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button class="btn btn-outline-primary" id="viewHistoryBtn">
+                                            <i class="fas fa-history"></i> View History
+                                        </button>
+                                        <button class="btn btn-outline-success" id="checkOutBtn">
+                                            <i class="fas fa-sign-out-alt"></i> Check Out
+                                        </button>
+                                        <button class="btn btn-outline-warning" id="checkInBtn">
+                                            <i class="fas fa-sign-in-alt"></i> Check In
+                                        </button>
+                                        <button class="btn btn-outline-info" id="printBarcodeBtn">
+                                            <i class="fas fa-print"></i> Print Barcode
+                                        </button>
+                                        <button class="btn btn-outline-secondary" id="generateReportBtn">
+                                            <i class="fas fa-chart-bar"></i> Generate Report
+                                        </button>
+                                        <button class="btn btn-outline-dark" id="editFileBtn">
+                                            <i class="fas fa-edit"></i> Edit File
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Scans History -->
+                <div class="card shadow">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Scans</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="recentScansList">
+                            <div class="list-group-item text-center text-muted">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <p>No recent scans</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal fade" id="historyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-history"></i> File Movement History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- History Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="date" class="form-control" id="historyDateFrom">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="date" class="form-control" id="historyDateTo">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" id="filterHistoryBtn">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- History Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>File ID</th>
+                                    <th>File Name</th>
+                                    <th>Action</th>
+                                    <th>User</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- History data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Export Options -->
+                    <div class="mt-3">
+                        <h6>Export History:</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-success" id="exportHistoryExcel">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button class="btn btn-sm btn-danger" id="exportHistoryPDF">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="exportHistoryCSV">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                            <button class="btn btn-sm btn-warning" id="printHistory">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-chart-bar"></i> Reports & Analytics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Report Type Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6>Select Report Type:</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-outline-primary report-type-btn active" data-type="status">
+                                    <i class="fas fa-chart-pie"></i> Status Report
+                                </button>
+                                <button class="btn btn-outline-success report-type-btn" data-type="movement">
+                                    <i class="fas fa-exchange-alt"></i> Movement Report
+                                </button>
+                                <button class="btn btn-outline-warning report-type-btn" data-type="overdue">
+                                    <i class="fas fa-clock"></i> Overdue Report
+                                </button>
+                                <button class="btn btn-outline-info report-type-btn" data-type="department">
+                                    <i class="fas fa-sitemap"></i> Department Report
+                                </button>
+                                <button class="btn btn-outline-danger report-type-btn" data-type="audit">
+                                    <i class="fas fa-user-shield"></i> Audit Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select" id="reportDateRange">
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="quarter">This Quarter</option>
+                                <option value="year">This Year</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="reportFromDate">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="reportToDate">
+                        </div>
+                    </div>
+                    
+                    <!-- Report Preview -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0" id="reportTitle">Status Report Preview</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="reportPreview">
+                                        <!-- Report content will be loaded here -->
+                                        <p class="text-muted">Select report type and filters to generate preview</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Actions -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary" id="generateReportBtnModal">
+                                    <i class="fas fa-cogs"></i> Generate Report
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-success" id="exportReportExcel">
+                                        <i class="fas fa-file-excel"></i> Excel
+                                    </button>
+                                    <button class="btn btn-danger" id="exportReportPDF">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                    <button class="btn btn-warning" id="printReportBtnModal">
+                                        <i class="fas fa-print"></i> Print
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Check Out Modal -->
+    <div class="modal fade" id="checkOutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-sign-out-alt"></i> Check Out File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="checkOutForm">
+                        <div class="mb-3">
+                            <label for="issuedTo" class="form-label">Issued To *</label>
+                            <select class="form-select" id="issuedTo" required>
+                                <option value="">Select Person/Department</option>
+                                <option value="john">John Smith - HR Department</option>
+                                <option value="sarah">Sarah Johnson - Finance Department</option>
+                                <option value="mike">Mike Wilson - Legal Department</option>
+                                <option value="david">David Brown - IT Department</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="checkOutPurpose" class="form-label">Purpose *</label>
+                            <textarea class="form-control" id="checkOutPurpose" rows="3" required placeholder="Enter purpose for checking out"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="checkOutDate" class="form-label">Date & Time</label>
+                                    <input type="datetime-local" class="form-control" id="checkOutDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="expectedReturn" class="form-label">Expected Return Date</label>
+                                    <input type="date" class="form-control" id="expectedReturn">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="checkOutNotes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="checkOutNotes" rows="2" placeholder="Any additional notes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmCheckOut">Confirm Check Out</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/app.js"></script>
+    
+    <script>
+        // Global variables
+        let currentFileData = null;
+        let html5QrCode = null;
+        let scannerActive = false;
+        let currentCameraId = null;
+        let recentScans = [];
+        let movementHistory = [];
+        
+        // Sample data
+        const sampleFiles = [
+            {
+                id: 'FMS-20240115-001',
+                name: 'Annual Financial Report 2024',
+                company: 'ABC Corporation',
+                department: 'Finance',
+                responsible: 'Sarah Johnson',
+                rack: 'Rack A - Shelf 1',
+                status: 'IN',
+                created: '2024-01-15',
+                updated: '2024-01-15',
+                purpose: 'Annual financial reporting and audit',
+                description: 'Contains annual financial statements, audit reports, and compliance documents for FY 2023-2024.',
+                preparedBy: 'Finance Department',
+                barcode: 'FMS-20240115-001'
+            },
+            {
+                id: 'FMS-20240114-002',
+                name: 'Employee Contracts',
+                company: 'XYZ Enterprises',
+                department: 'HR',
+                responsible: 'John Smith',
+                rack: 'Rack B - Shelf 2',
+                status: 'OUT',
+                created: '2024-01-14',
+                updated: '2024-01-14',
+                purpose: 'Employee agreements and contracts',
+                description: 'Employment contracts, non-disclosure agreements, and HR policies.',
+                preparedBy: 'HR Department',
+                barcode: 'FMS-20240114-002'
+            }
+        ];
+        
+        // Movement history data
+        const sampleHistory = [
+            {
+                id: 'FMS-20240115-001',
+                name: 'Annual Financial Report 2024',
+                date: '2024-01-15 10:30',
+                action: 'CREATED',
+                user: 'Admin User',
+                details: 'File created in system'
+            },
+            {
+                id: 'FMS-20240115-001',
+                name: 'Annual Financial Report 2024',
+                date: '2024-01-16 14:20',
+                action: 'CHECKED_OUT',
+                user: 'John Smith',
+                details: 'Checked out for audit review'
+            },
+            {
+                id: 'FMS-20240114-002',
+                name: 'Employee Contracts',
+                date: '2024-01-14 09:15',
+                action: 'CREATED',
+                user: 'Admin User',
+                details: 'File created in system'
+            },
+            {
+                id: 'FMS-20240114-002',
+                name: 'Employee Contracts',
+                date: '2024-01-14 11:45',
+                action: 'CHECKED_OUT',
+                user: 'Sarah Johnson',
+                details: 'Checked out for HR review'
+            }
+        ];
+
+        $(document).ready(function() {
+            console.log('Scan File page loaded');
+            
+            // Initialize the page
+            initializePage();
+            setupEventHandlers();
+            loadCameras();
+            initializeScanner();
+            
+            // Set default dates
+            setDefaultDates();
+        });
+
+        function initializePage() {
+            // Hide file details initially
+            $('#fileDetails').addClass('d-none');
+            $('#noFileSelected').removeClass('d-none');
+            
+            // Load movement history
+            movementHistory = [...sampleHistory];
+            updateRecentScans();
+        }
+
+        function setupEventHandlers() {
+            // Scanner controls
+            $('#startScannerBtn').click(startScanner);
+            $('#stopScannerBtn').click(stopScanner);
+            $('#switchCameraBtn').click(switchCamera);
+            $('#scannerToggle').change(toggleScanner);
+            
+            // Search buttons
+            $('#searchFileBtn').click(searchByFileId);
+            $('#searchByNameBtn').click(searchByFileName);
+            $('#showInFiles').click(() => filterFilesByStatus('IN'));
+            $('#showOutFiles').click(() => filterFilesByStatus('OUT'));
+            $('#showOverdueFiles').click(() => filterFilesByStatus('OVERDUE'));
+            
+            // File action buttons
+            $('#checkOutBtn').click(openCheckOutModal);
+            $('#checkInBtn').click(checkInFile);
+            $('#printBarcodeBtn').click(printCurrentFileBarcode);
+            $('#viewHistoryBtn').click(viewFileHistory);
+            $('#generateReportBtn').click(generateFileReport);
+            $('#editFileBtn').click(editCurrentFile);
+            $('#printFileBtn').click(printFileDetails);
+            
+            // History modal buttons
+            $('#filterHistoryBtn').click(filterHistory);
+            $('#exportHistoryExcel').click(exportHistoryExcel);
+            $('#exportHistoryPDF').click(exportHistoryPDF);
+            $('#exportHistoryCSV').click(exportHistoryCSV);
+            $('#printHistory').click(printHistory);
+            
+            // Report modal buttons
+            $('.report-type-btn').click(function() {
+                $('.report-type-btn').removeClass('active');
+                $(this).addClass('active');
+                updateReportPreview($(this).data('type'));
+            });
+            
+            $('#generateReportBtnModal').click(generateReport);
+            $('#exportReportExcel').click(exportReportExcel);
+            $('#exportReportPDF').click(exportReportPDF);
+            $('#printReportBtnModal').click(printReport);
+            
+            // Check out modal
+            $('#confirmCheckOut').click(performCheckOut);
+            
+            // Enter key in search fields
+            $('#fileIdInput, #fileNameSearch').keypress(function(e) {
+                if (e.which === 13) {
+                    if ($(this).attr('id') === 'fileIdInput') {
+                        searchByFileId();
+                    } else {
+                        searchByFileName();
+                    }
+                }
+            });
+            
+            // Date range change
+            $('#reportDateRange').change(function() {
+                updateReportDateRange($(this).val());
+            });
+        }
+
+        async function loadCameras() {
+            try {
+                // Get available cameras
+                const devices = await Html5Qrcode.getCameras();
+                const cameraSelect = $('#cameraSelect');
+                cameraSelect.empty();
+                
+                if (devices && devices.length > 0) {
+                    devices.forEach(function(device) {
+                        var label = device.label || ('Camera ' + (cameraSelect.children().length + 1));
+                        cameraSelect.append('<option value="' + device.id + '">' + label + '</option>');
+                    });
+                    currentCameraId = devices[0].id;
+                    console.log('Cameras loaded:', devices.length);
+                } else {
+                    cameraSelect.append('<option value="">No cameras found</option>');
+                    showAlert('No cameras detected on this device', 'warning');
+                }
+            } catch (error) {
+                console.error('Error loading cameras:', error);
+                showAlert('Error accessing camera: ' + error.message, 'danger');
+            }
+        }
+
+        function initializeScanner() {
+            // Create scanner instance
+            html5QrCode = new Html5Qrcode("reader");
+            
+            // Configure scanner
+            const config = {
+                fps: 10,
+                qrbox: { width: 200, height: 200 },
+                rememberLastUsedCamera: true,
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+            };
+            
+            console.log('QR/Barcode scanner initialized');
+        }
+
+        async function startScanner() {
+            if (!html5QrCode) {
+                showAlert('Scanner not initialized', 'danger');
+                return;
+            }
+            
+            try {
+                const cameraId = currentCameraId || $('#cameraSelect').val();
+                if (!cameraId) {
+                    showAlert('Please select a camera first', 'warning');
+                    return;
+                }
+                
+                // Start scanning
+                await html5QrCode.start(
+                    cameraId,
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    onScanSuccess,
+                    onScanError
+                );
+                
+                scannerActive = true;
+                updateScannerUI(true);
+                $('#reader').addClass('scanner-active');
+                showAlert('Scanner started successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error starting scanner:', error);
+                showAlert('Error starting scanner: ' + error.message, 'danger');
+            }
+        }
+
+        function stopScanner() {
+            if (html5QrCode && scannerActive) {
+                html5QrCode.stop().then(() => {
+                    scannerActive = false;
+                    updateScannerUI(false);
+                    $('#reader').removeClass('scanner-active');
+                    showAlert('Scanner stopped', 'info');
+                }).catch(error => {
+                    console.error('Error stopping scanner:', error);
+                });
+            }
+        }
+
+        function toggleScanner() {
+            if ($('#scannerToggle').is(':checked')) {
+                if (!scannerActive) {
+                    startScanner();
+                }
+            } else {
+                if (scannerActive) {
+                    stopScanner();
+                }
+            }
+        }
+
+        function switchCamera() {
+            if (scannerActive) {
+                stopScanner();
+                setTimeout(() => {
+                    currentCameraId = $('#cameraSelect').val();
+                    startScanner();
+                }, 500);
+            } else {
+                currentCameraId = $('#cameraSelect').val();
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log('Scan successful:', decodedText);
+            
+            // Show scan result
+            $('#scannedCode').text(decodedText);
+            $('#scanResult').removeClass('d-none');
+            
+            // Play success sound (simulated)
+            playScanSound();
+            
+            // Add to recent scans
+            addToRecentScans(decodedText);
+            
+            // Search for file
+            searchByFileId(decodedText);
+            
+            // Hide result after 2 seconds
+            setTimeout(() => {
+                $('#scanResult').addClass('d-none');
+            }, 2000);
+        }
+
+        function onScanError(error) {
+            // Don't show errors when scanner is not active
+            if (!scannerActive) return;
+            
+            console.log('Scan error:', error);
+        }
+
+        function playScanSound() {
+            // In a real app, you would play an actual sound
+            console.log('Play scan success sound');
+        }
+
+        function updateScannerUI(active) {
+            $('#startScannerBtn').prop('disabled', active);
+            $('#stopScannerBtn').prop('disabled', !active);
+            $('#scannerToggle').prop('checked', active);
+        }
+
+        function searchByFileId(fileId = null) {
+            const searchId = fileId || $('#fileIdInput').val().trim().toUpperCase();
+            
+            if (!searchId) {
+                showAlert('Please enter a File ID', 'warning');
+                return;
+            }
+            
+            showAlert('Searching for file: ' + searchId + '...', 'info');
+            
+            // Find file in sample data
+            const file = sampleFiles.find(f => f.id === searchId || f.barcode === searchId);
+            
+            if (file) {
+                displayFileDetails(file);
+                showAlert('File found!', 'success');
+                
+                // Add to recent scans if not from scanner
+                if (!fileId) {
+                    addToRecentScans(searchId);
+                }
+                
+                // Clear input
+                $('#fileIdInput').val('');
+            } else {
+                showAlert('File not found: ' + searchId, 'danger');
+            }
+        }
+
+        function searchByFileName() {
+            const searchName = $('#fileNameSearch').val().trim();
+            
+            if (!searchName) {
+                showAlert('Please enter a file name', 'warning');
+                return;
+            }
+            
+            showAlert('Searching for files containing: ' + searchName + '...', 'info');
+            
+            // Find files containing search term
+            const matchingFiles = sampleFiles.filter(f => 
+                f.name.toLowerCase().includes(searchName.toLowerCase())
+            );
+            
+            if (matchingFiles.length > 0) {
+                if (matchingFiles.length === 1) {
+                    displayFileDetails(matchingFiles[0]);
+                    showAlert('File found!', 'success');
+                } else {
+                    // Show selection dialog
+                    showFileSelectionDialog(matchingFiles);
+                }
+            } else {
+                showAlert('No files found containing: ' + searchName, 'warning');
+            }
+        }
+
+        function filterFilesByStatus(status) {
+            const matchingFiles = sampleFiles.filter(f => f.status === status);
+            
+            if (matchingFiles.length > 0) {
+                if (matchingFiles.length === 1) {
+                    displayFileDetails(matchingFiles[0]);
+                } else {
+                    showFileSelectionDialog(matchingFiles);
+                }
+            } else {
+                showAlert('No files with status: ' + status, 'info');
+            }
+        }
+
+        function showFileSelectionDialog(files) {
+            let options = '<option value="">Select a file...</option>';
+            files.forEach(function(file) {
+                options += '<option value="' + file.id + '">' + file.id + ' - ' + file.name + '</option>';
+            });
+            
+            var fileList = files.map(function(f) { return f.id + ' - ' + f.name; }).join('\n');
+            const selection = prompt('Multiple files found. Please select one:\n' + fileList);
+            if (selection) {
+                const selectedFile = files.find(f => f.id === selection);
+                if (selectedFile) {
+                    displayFileDetails(selectedFile);
+                }
+            }
+        }
+
+        function displayFileDetails(file) {
+            currentFileData = file;
+            
+            // Update UI
+            $('#fileTitleDisplay').text(file.name);
+            $('#fileIdDisplay').text(file.id);
+            $('#companyDisplay').text(file.company);
+            $('#preparedByDisplay').text(file.preparedBy);
+            $('#responsibleDisplay').text(file.responsible);
+            $('#rackDisplay').text(file.rack);
+            $('#purposeDisplay').text(file.purpose);
+            $('#createdDateDisplay').text(file.created);
+            $('#updatedDateDisplay').text(file.updated);
+            $('#departmentDisplay').text(file.department);
+            $('#descriptionDisplay').text(file.description);
+            
+            // Update status badge
+            const statusBadge = $('#fileStatusDisplay');
+            statusBadge.text(file.status);
+            statusBadge.removeClass('bg-success bg-danger bg-warning');
+            
+            switch(file.status) {
+                case 'IN':
+                    statusBadge.addClass('bg-success');
+                    $('#checkOutBtn').show();
+                    $('#checkInBtn').hide();
+                    break;
+                case 'OUT':
+                    statusBadge.addClass('bg-danger');
+                    $('#checkOutBtn').hide();
+                    $('#checkInBtn').show();
+                    break;
+                case 'OVERDUE':
+                    statusBadge.addClass('bg-warning');
+                    $('#checkOutBtn').hide();
+                    $('#checkInBtn').show();
+                    break;
+            }
+            
+            // Show file details section
+            $('#noFileSelected').addClass('d-none');
+            $('#fileDetails').removeClass('d-none');
+            
+            // Add to recent scans
+            addToRecentScans(file.id);
+        }
+
+        function addToRecentScans(fileId) {
+            const file = sampleFiles.find(f => f.id === fileId);
+            if (file && !recentScans.find(s => s.id === fileId)) {
+                recentScans.unshift({
+                    id: fileId,
+                    name: file.name,
+                    time: new Date().toLocaleTimeString(),
+                    date: new Date().toLocaleDateString()
+                });
+                
+                // Keep only last 5 scans
+                if (recentScans.length > 5) {
+                    recentScans.pop();
+                }
+                
+                updateRecentScans();
+            }
+        }
+
+        function updateRecentScans() {
+            const list = $('#recentScansList');
+            list.empty();
+            
+            if (recentScans.length === 0) {
+                list.append(`
+                    <div class="list-group-item text-center text-muted">
+                        <i class="fas fa-search fa-2x mb-2"></i>
+                        <p>No recent scans</p>
+                    </div>
+                `);
+            } else {
+                recentScans.forEach(scan => {
+                    list.append(`
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>${scan.id}</strong><br>
+                                    <small>${scan.name}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small>${scan.date}<br>${scan.time}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+        }
+
+        function openCheckOutModal() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            // Set current date/time
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const time = now.toTimeString().split(' ')[0];
+            $('#checkOutDate').val(today + 'T' + time);
+            
+            // Show modal
+            $('#checkOutModal').modal('show');
+        }
+
+        function performCheckOut() {
+            const issuedTo = $('#issuedTo').val();
+            const purpose = $('#checkOutPurpose').val();
+            
+            if (!issuedTo || !purpose) {
+                showAlert('Please fill all required fields', 'warning');
+                return;
+            }
+            
+            // Update file status
+            currentFileData.status = 'OUT';
+            
+            // Add to history
+            movementHistory.unshift({
+                id: currentFileData.id,
+                name: currentFileData.name,
+                date: new Date().toLocaleString(),
+                action: 'CHECKED_OUT',
+                user: 'Current User',
+                details: 'Issued to: ' + $('#issuedTo option:selected').text() + ', Purpose: ' + purpose
+            });
+            
+            // Close modal
+            $('#checkOutModal').modal('hide');
+            
+            // Update display
+            displayFileDetails(currentFileData);
+            
+            // Reset form
+            $('#checkOutForm')[0].reset();
+            
+            showAlert('File checked out successfully!', 'success');
+        }
+
+        function checkInFile() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            const confirmation = confirm('Are you sure you want to check in file: ' + currentFileData.id + '?');
+            
+            if (confirmation) {
+                // Update file status
+                currentFileData.status = 'IN';
+                currentFileData.updated = new Date().toISOString().split('T')[0];
+                
+                // Add to history
+                movementHistory.unshift({
+                    id: currentFileData.id,
+                    name: currentFileData.name,
+                    date: new Date().toLocaleString(),
+                    action: 'CHECKED_IN',
+                    user: 'Current User',
+                    details: 'File returned to rack'
+                });
+                
+                // Update display
+                displayFileDetails(currentFileData);
+                
+                showAlert('File checked in successfully!', 'success');
+            }
+        }
+
+        function printCurrentFileBarcode() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            const params = new URLSearchParams({
+                fileName: currentFileData.name,
+                companyName: currentFileData.company,
+                createdBy: currentFileData.preparedBy,
+                fileLocation: currentFileData.rack,
+                creationDate: currentFileData.created,
+                purpose: currentFileData.purpose,
+                fileId: currentFileData.id
+            });
+            
+            window.open('../print/barcode-page.html?' + params + '&autoPrint=true', '_blank');
+            showAlert('Opening barcode page for printing...', 'info');
+        }
+
+        function viewFileHistory() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            // Filter history for current file
+            const fileHistory = movementHistory.filter(h => h.id === currentFileData.id);
+            
+            // Update history table
+            const tbody = $('#historyTableBody');
+            tbody.empty();
+            
+            if (fileHistory.length === 0) {
+                tbody.append('<tr><td colspan="6" class="text-center text-muted">No history found for this file</td></tr>');
+            } else {
+                fileHistory.forEach(function(record) {
+                    const actionClass = record.action === 'CHECKED_IN' ? 'history-in' : 'history-out';
+                    const badgeClass = record.action === 'CHECKED_IN' ? 'bg-success' : 'bg-danger';
+                    var row = '<tr class="' + actionClass + '">';
+                    row += '<td>' + record.date + '</td>';
+                    row += '<td><strong>' + record.id + '</strong></td>';
+                    row += '<td>' + record.name + '</td>';
+                    row += '<td><span class="badge ' + badgeClass + '">' + record.action + '</span></td>';
+                    row += '<td>' + record.user + '</td>';
+                    row += '<td>' + record.details + '</td></tr>';
+                    tbody.append(row);
+                });
+            }
+            
+            // Show modal
+            $('#historyModal').modal('show');
+        }
+
+        function filterHistory() {
+            const fromDate = $('#historyDateFrom').val();
+            const toDate = $('#historyDateTo').val();
+            
+            let filteredHistory = movementHistory;
+            
+            if (fromDate) {
+                filteredHistory = filteredHistory.filter(h => {
+                    const recordDate = h.date.split(' ')[0];
+                    return recordDate >= fromDate;
+                });
+            }
+            
+            if (toDate) {
+                filteredHistory = filteredHistory.filter(h => {
+                    const recordDate = h.date.split(' ')[0];
+                    return recordDate <= toDate;
+                });
+            }
+            
+            // Update table
+            const tbody = $('#historyTableBody');
+            tbody.empty();
+            
+            filteredHistory.forEach(record => {
+                const actionClass = record.action === 'CHECKED_IN' ? 'history-in' : 'history-out';
+                tbody.append(`
+                    <tr class="${actionClass}">
+                        <td>${record.date}</td>
+                        <td><strong>${record.id}</strong></td>
+                        <td>${record.name}</td>
+                        <td><span class="badge ${record.action === 'CHECKED_IN' ? 'bg-success' : 'bg-danger'}">${record.action}</span></td>
+                        <td>${record.user}</td>
+                        <td>${record.details}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        function generateFileReport() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            // Show report modal with file-specific report
+            updateReportPreview('audit');
+            $('#reportModal').modal('show');
+        }
+
+        function editCurrentFile() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            showAlert('Edit feature for ' + currentFileData.id + ' would open here', 'info');
+            // In a real app, redirect to edit page
+        }
+
+        function printFileDetails() {
+            if (!currentFileData) {
+                showAlert('No file selected', 'warning');
+                return;
+            }
+            
+            const printWindow = window.open('', '_blank');
+            var html = '<html><head><title>File Details - ' + currentFileData.id + '</title>';
+            html += '<style>body { font-family: Arial; padding: 20px; } h2 { color: #333; } table { width: 100%; border-collapse: collapse; } th, td { padding: 8px; border: 1px solid #ddd; } th { background: #f5f5f5; }</style>';
+            html += '</head><body><h2>File Details Report</h2><table>';
+            html += '<tr><th>File ID</th><td>' + currentFileData.id + '</td></tr>';
+            html += '<tr><th>File Name</th><td>' + currentFileData.name + '</td></tr>';
+            html += '<tr><th>Company</th><td>' + currentFileData.company + '</td></tr>';
+            html += '<tr><th>Department</th><td>' + currentFileData.department + '</td></tr>';
+            html += '<tr><th>Responsible Person</th><td>' + currentFileData.responsible + '</td></tr>';
+            html += '<tr><th>Rack Location</th><td>' + currentFileData.rack + '</td></tr>';
+            html += '<tr><th>Status</th><td>' + currentFileData.status + '</td></tr>';
+            html += '<tr><th>Created Date</th><td>' + currentFileData.created + '</td></tr>';
+            html += '<tr><th>Purpose</th><td>' + currentFileData.purpose + '</td></tr>';
+            html += '</table><p><strong>Description:</strong> ' + currentFileData.description + '</p>';
+            html += '<p style="margin-top: 30px; text-align: center; color: #666;">Generated on ' + new Date().toLocaleDateString() + '</p>';
+            html += '</body></html>';
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function updateReportPreview(type) {
+            let previewContent = '';
+            let title = '';
+            
+            switch(type) {
+                case 'status':
+                    title = 'File Status Report';
+                    var totalFiles = sampleFiles.length;
+                    var availableFiles = sampleFiles.filter(function(f) { return f.status === 'IN'; }).length;
+                    var checkedOut = sampleFiles.filter(function(f) { return f.status === 'OUT'; }).length;
+                    var overdueFiles = sampleFiles.filter(function(f) { return f.status === 'OVERDUE'; }).length;
+                    previewContent = '<h6>File Status Distribution</h6><div class="mb-3">';
+                    previewContent += '<p>Total Files: ' + totalFiles + '</p>';
+                    previewContent += '<p>Available (IN): ' + availableFiles + '</p>';
+                    previewContent += '<p>Checked Out (OUT): ' + checkedOut + '</p>';
+                    previewContent += '<p>Overdue: ' + overdueFiles + '</p></div>';
+                    break;
+                    
+                case 'movement':
+                    title = 'File Movement Report';
+                    var rows = '';
+                    movementHistory.slice(0, 5).forEach(function(h) {
+                        rows += '<tr><td>' + h.date + '</td><td>' + h.id + '</td><td>' + h.action + '</td><td>' + h.user + '</td></tr>';
+                    });
+                    previewContent = '<h6>Recent File Movements</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>File ID</th><th>Action</th><th>User</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+                    break;
+                    
+                case 'overdue':
+                    title = 'Overdue Files Report';
+                    previewContent = '<h6>Overdue Files</h6><div class="alert alert-warning">';
+                    previewContent += '<p>No overdue files found in the system.</p>';
+                    previewContent += '<p>All files are either available or checked out with valid return dates.</p></div>';
+                    break;
+                    
+                case 'department':
+                    title = 'Department-wise File Report';
+                    var financeCount = sampleFiles.filter(function(f) { return f.department === 'Finance'; }).length;
+                    var hrCount = sampleFiles.filter(function(f) { return f.department === 'HR'; }).length;
+                    var legalCount = sampleFiles.filter(function(f) { return f.department === 'Legal'; }).length;
+                    var itCount = sampleFiles.filter(function(f) { return f.department === 'IT'; }).length;
+                    previewContent = '<h6>Files by Department</h6><div class="mb-3">';
+                    previewContent += '<p>Finance Department: ' + financeCount + ' files</p>';
+                    previewContent += '<p>HR Department: ' + hrCount + ' files</p>';
+                    previewContent += '<p>Legal Department: ' + legalCount + ' files</p>';
+                    previewContent += '<p>IT Department: ' + itCount + ' files</p></div>';
+                    break;
+                    
+                case 'audit':
+                    title = 'Audit Trail Report';
+                    var auditRows = '';
+                    movementHistory.slice(0, 10).forEach(function(h) {
+                        var badgeClass = h.action === 'CHECKED_IN' ? 'bg-success' : 'bg-danger';
+                        auditRows += '<tr><td>' + h.date + '</td><td>' + h.id + '</td>';
+                        auditRows += '<td><span class="badge ' + badgeClass + '">' + h.action + '</span></td>';
+                        auditRows += '<td>' + h.user + '</td><td>' + h.details + '</td></tr>';
+                    });
+                    previewContent = '<h6>Audit Trail</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>File ID</th><th>Action</th><th>User</th><th>Details</th></tr></thead><tbody>' + auditRows + '</tbody></table></div>';
+                    break;
+            }
+            
+            $('#reportTitle').text(title);
+            $('#reportPreview').html(previewContent);
+        }
+
+        function updateReportDateRange(range) {
+            const today = new Date();
+            let fromDate, toDate;
+            
+            switch(range) {
+                case 'today':
+                    fromDate = toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    fromDate = weekStart.toISOString().split('T')[0];
+                    toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    fromDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                    toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    const quarterStart = new Date(today.getFullYear(), quarter * 3, 1);
+                    fromDate = quarterStart.toISOString().split('T')[0];
+                    toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'year':
+                    fromDate = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+                    toDate = today.toISOString().split('T')[0];
+                    break;
+                case 'custom':
+                    // Show custom date inputs
+                    $('#reportFromDate').show();
+                    $('#reportToDate').show();
+                    return;
+            }
+            
+            $('#reportFromDate').val(fromDate);
+            $('#reportToDate').val(toDate);
+        }
+
+        function generateReport() {
+            const reportType = $('.report-type-btn.active').data('type');
+            const fromDate = $('#reportFromDate').val();
+            const toDate = $('#reportToDate').val();
+            
+            showAlert('Generating ' + reportType + ' report for ' + fromDate + ' to ' + toDate + '...', 'info');
+            
+            // In a real app, this would generate and download the report
+            setTimeout(() => {
+                showAlert('Report generated successfully!', 'success');
+            }, 1000);
+        }
+
+        function exportReportExcel() {
+            showAlert('Exporting report to Excel...', 'info');
+            // In a real app, this would generate Excel file
+        }
+
+        function exportReportPDF() {
+            showAlert('Exporting report to PDF...', 'info');
+            // In a real app, this would generate PDF
+        }
+
+        function printReport() {
+            showAlert('Opening print preview...', 'info');
+            window.print();
+        }
+
+        function exportHistoryExcel() {
+            showAlert('Exporting history to Excel...', 'info');
+        }
+
+        function exportHistoryPDF() {
+            showAlert('Exporting history to PDF...', 'info');
+        }
+
+        function exportHistoryCSV() {
+            showAlert('Exporting history to CSV...', 'info');
+        }
+
+        function printHistory() {
+            showAlert('Opening history print preview...', 'info');
+            window.print();
+        }
+
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            $('#historyDateFrom').val(today);
+            $('#historyDateTo').val(today);
+            $('#reportFromDate').val(today);
+            $('#reportToDate').val(today);
+        }
+
+        // Clean up scanner when leaving page
+        $(window).on('beforeunload', function() {
+            if (scannerActive) {
+                stopScanner();
+            }
+        });
+    </script>
+</body>
+</html>

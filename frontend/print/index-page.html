@@ -1,0 +1,344 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Index - A4</title>
+    <style>
+        /* A4 size: 210mm x 297mm */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 210mm;
+            min-height: 297mm;
+            font-family: 'Arial', sans-serif;
+            background: white;
+            font-size: 10pt;
+        }
+        
+        .container {
+            width: 190mm; /* 210mm - 20mm margins */
+            min-height: 277mm; /* 297mm - 20mm margins */
+            margin: 10mm auto;
+            padding: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 5mm;
+            padding-bottom: 3mm;
+            border-bottom: 1.5px solid #000;
+        }
+        
+        .header h1 {
+            font-size: 18pt;
+            color: #000;
+            margin-bottom: 1mm;
+        }
+        
+        .header .subtitle {
+            font-size: 10pt;
+            color: #666;
+        }
+        
+        .file-info {
+            margin-bottom: 5mm;
+            padding: 3mm;
+            border: 1px solid #000;
+            background: #f8f8f8;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2mm;
+            margin-bottom: 3mm;
+        }
+        
+        .info-item {
+            display: flex;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            min-width: 40mm;
+            color: #000;
+            font-size: 9pt;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: #000;
+            font-size: 9pt;
+        }
+        
+        .purpose-section {
+            margin-top: 2mm;
+            padding-top: 2mm;
+            border-top: 0.5px dashed #999;
+        }
+        
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 4mm 0 2mm 0;
+            padding-bottom: 1mm;
+            border-bottom: 1px solid #000;
+        }
+        
+        .index-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-top: 2mm;
+        }
+        
+        .index-table th {
+            background: #000;
+            color: white;
+            padding: 3mm 1mm;
+            text-align: center;
+            border: 1px solid #000;
+            font-weight: bold;
+            font-size: 9pt;
+        }
+        
+        .index-table td {
+            padding: 2mm 1mm;
+            border: 1px solid #000;
+            vertical-align: top;
+            font-size: 9pt;
+        }
+        
+        .sno-column {
+            width: 10mm;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .description-column {
+            width: 75mm;
+        }
+        
+        .date-column {
+            width: 20mm;
+            text-align: center;
+        }
+        
+        .remarks-column {
+            width: 35mm;
+        }
+        
+        .initial-column {
+            width: 15mm;
+            text-align: center;
+        }
+        
+        .footer {
+            margin-top: 5mm;
+            text-align: center;
+            font-size: 8pt;
+            color: #555;
+            padding-top: 2mm;
+            border-top: 0.5px solid #999;
+        }
+        
+        /* Print-specific styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                margin: 10mm auto;
+            }
+            .index-table {
+                page-break-inside: auto;
+            }
+            .index-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+        
+        /* Hide everything except container when printing */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .container, .container * {
+                visibility: visible;
+            }
+            .container {
+                position: absolute;
+                left: 10mm;
+                top: 10mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FILE INDEX</h1>
+            <div class="subtitle">File Management System - Table of Contents</div>
+        </div>
+        
+        <div class="file-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">File ID:</div>
+                    <div class="info-value" id="fileId">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">File Name:</div>
+                    <div class="info-value" id="fileName">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Company:</div>
+                    <div class="info-value" id="companyName">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Department:</div>
+                    <div class="info-value" id="department">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Created By:</div>
+                    <div class="info-value" id="createdBy">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Responsible Person:</div>
+                    <div class="info-value" id="responsiblePerson">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">File Location:</div>
+                    <div class="info-value" id="fileLocation">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Creation Date:</div>
+                    <div class="info-value" id="creationDate">-</div>
+                </div>
+            </div>
+            
+            <div class="purpose-section">
+                <div class="info-item">
+                    <div class="info-label">Purpose:</div>
+                    <div class="info-value" id="purpose">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Description:</div>
+                    <div class="info-value" id="description">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-title">TABLE OF CONTENTS</div>
+        
+        <table class="index-table">
+            <thead>
+                <tr>
+                    <th class="sno-column">S.No.</th>
+                    <th class="description-column">Document Title / Description</th>
+                    <th class="date-column">Date</th>
+                    <th class="remarks-column">Remarks</th>
+                    <th class="initial-column">Initial</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Row 1-10 -->
+                <tr><td class="sno-column">1</td><td class="description-column">File Creation and Index Page</td><td class="date-column" id="indexDate"></td><td class="remarks-column">File created in FMS</td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">2</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">3</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">4</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">5</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">6</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">7</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">8</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">9</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">10</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">11</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">12</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">13</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">14</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">15</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">16</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">17</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">18</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">19</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+                <tr><td class="sno-column">20</td><td class="description-column"></td><td class="date-column"></td><td class="remarks-column"></td><td class="initial-column"></td></tr>
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Print Date: <span id="printDate"></span></p>
+            <p>File Management System - This page is part of the official file documentation</p>
+        </div>
+    </div>
+
+    <script>
+        // Get parameters from URL
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                fileName: params.get('fileName') || 'New File',
+                companyName: params.get('companyName') || 'ABC Corporation',
+                createdBy: params.get('createdBy') || 'Admin',
+                fileLocation: params.get('fileLocation') || 'Rack A - Shelf 1',
+                creationDate: params.get('creationDate') || new Date().toLocaleDateString(),
+                purpose: params.get('purpose') || 'File Purpose',
+                responsiblePerson: params.get('responsiblePerson') || 'Responsible Person',
+                department: params.get('department') || 'General',
+                fileId: params.get('fileId') || 'FMS-2024-001',
+                preparedBySignature: params.get('preparedBySignature') || 'Prepared By',
+                approvedBySignature: params.get('approvedBySignature') || 'Approving Authority',
+                description: params.get('description') || 'No description provided'
+            };
+        }
+        
+        // Populate the page with data
+        function populatePage() {
+            const data = getUrlParams();
+            
+            // Fill in the data
+            document.getElementById('fileId').textContent = data.fileId;
+            document.getElementById('fileName').textContent = data.fileName;
+            document.getElementById('companyName').textContent = data.companyName;
+            document.getElementById('department').textContent = data.department;
+            document.getElementById('createdBy').textContent = data.createdBy;
+            document.getElementById('responsiblePerson').textContent = data.responsiblePerson;
+            document.getElementById('fileLocation').textContent = data.fileLocation;
+            document.getElementById('creationDate').textContent = data.creationDate;
+            document.getElementById('purpose').textContent = data.purpose;
+            document.getElementById('description').textContent = data.description;
+            document.getElementById('indexDate').textContent = data.creationDate;
+            document.getElementById('printDate').textContent = new Date().toLocaleDateString();
+        }
+        
+        // Auto-print if parameter is set
+        function checkAutoPrint() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('autoPrint') === 'true') {
+                // Small delay to ensure everything is loaded
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        }
+        
+        // Initialize when page loads
+        window.onload = function() {
+            populatePage();
+            checkAutoPrint();
+        };
+    </script>
+</body>
+</html>

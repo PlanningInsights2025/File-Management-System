@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📁 Live File Scanner | Camera Working</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #00b09b;
+            --danger: #ff416c;
+            --warning: #f7971e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .card {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff4b2b 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        /* Scanner Styles */
+        #scannerContainer {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 200px;
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.7);
+        }
+        
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            top: 50%;
+            animation: scan 2s linear infinite;
+            box-shadow: 0 0 10px #00ff88;
+        }
+        
+        @keyframes scan {
+            0% { top: 10%; }
+            50% { top: 90%; }
+            100% { top: 10%; }
+        }
+        
+        #scannerPlaceholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: #000;
+            z-index: 3;
+        }
+        
+        #scannerPlaceholder i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* File Card */
+        .file-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+        
+        .file-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .status-in { background: #d4edda; color: #155724; }
+        .status-out { background: #fff3cd; color: #856404; }
+        .status-overdue { background: #f8d7da; color: #721c24; }
+        
+        /* Alert */
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        
+        .custom-alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Camera Select */
+        .camera-select-box {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-folder me-2"></i>File Scanner Pro
+            </a>
+            <div class="navbar-text">
+                <i class="fas fa-user-circle me-2"></i>Admin
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row">
+            <!-- Scanner Section -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-camera me-2"></i>Live Camera Scanner</span>
+                        <div>
+                            <span id="scannerStatus" class="badge bg-warning">Ready</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Scanner Container -->
+                        <div id="scannerContainer">
+                            <video id="video" playsinline></video>
+                            
+                            <div class="scanner-overlay">
+                                <div class="scanner-frame">
+                                    <div class="scan-line"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="scannerPlaceholder">
+                                <i class="fas fa-camera"></i>
+                                <h4 class="mb-3">Camera Ready</h4>
+                                <p>Click "Start Scanner" to begin</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Scanner Controls -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <button id="startScanner" class="btn btn-primary w-100">
+                                    <i class="fas fa-play me-2"></i>Start Scanner
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button id="stopScanner" class="btn btn-danger w-100" disabled>
+                                    <i class="fas fa-stop me-2"></i>Stop Scanner
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button id="switchCamera" class="btn btn-secondary w-100">
+                                    <i class="fas fa-sync me-2"></i>Switch Camera
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Camera Selection -->
+                        <div class="camera-select-box">
+                            <label class="form-label text-white mb-2">
+                                <i class="fas fa-video me-2"></i>Select Camera
+                            </label>
+                            <select id="cameraSelect" class="form-select bg-dark text-white">
+                                <option value="">Auto-select Camera</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Manual Search -->
+                        <div class="mt-4">
+                            <div class="input-group">
+                                <input type="text" id="manualSearch" class="form-control form-control-lg" 
+                                       placeholder="Enter File ID or Name...">
+                                <button id="searchBtn" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Details -->
+                <div class="card" id="fileDetailsCard" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"></i>File Details
+                    </div>
+                    <div class="card-body">
+                        <div id="fileDetails">
+                            <!-- File details will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Stats -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-2"></i>Quick Stats
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <div class="p-3 rounded" style="background: #e3f2fd;">
+                                    <h3 id="totalFiles">5</h3>
+                                    <small>Total Files</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 rounded" style="background: #e8f5e9;">
+                                    <h3 id="availableFiles">2</h3>
+                                    <small>Available</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded" style="background: #fff3e0;">
+                                    <h3 id="checkedOutFiles">2</h3>
+                                    <small>Checked Out</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded" style="background: #ffebee;">
+                                    <h3 id="overdueFiles">1</h3>
+                                    <small>Overdue</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="simulateScan()">
+                                <i class="fas fa-qrcode me-2"></i>Test Scan
+                            </button>
+                            <button class="btn btn-outline-success" onclick="checkOutRandom()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Quick Checkout
+                            </button>
+                            <button class="btn btn-outline-info" onclick="showAllFiles()">
+                                <i class="fas fa-list me-2"></i>View All Files
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Scans -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </div>
+                    <div class="card-body">
+                        <div id="recentActivity">
+                            <div class="alert alert-info">
+                                <small>Scanner ready to use</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="alert-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- HTML5 QR Code Scanner - Simple and Reliable -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <script>
+        // Global variables
+        let currentStream = null;
+        let currentCameraIndex = 0;
+        let cameras = [];
+        let html5QrCode = null;
+        
+        // Sample data
+        const sampleFiles = [
+            { id: 'FILE-001', name: 'Annual Report 2024', status: 'IN', department: 'Finance', location: 'Shelf A1' },
+            { id: 'FILE-002', name: 'Employee Contracts', status: 'OUT', department: 'HR', location: 'Shelf B2', dueDate: '2024-02-15' },
+            { id: 'FILE-003', name: 'Network Diagram', status: 'OVERDUE', department: 'IT', location: 'Shelf C3', dueDate: '2024-01-30' },
+            { id: 'FILE-004', name: 'Legal Documents', status: 'IN', department: 'Legal', location: 'Shelf D4' },
+            { id: 'FILE-005', name: 'Marketing Plan', status: 'OUT', department: 'Marketing', location: 'Shelf E5', dueDate: '2024-02-20' }
+        ];
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing File Scanner...');
+            
+            // Initialize HTML5 QR Scanner
+            initializeScanner();
+            
+            // Load available cameras
+            loadCameras();
+            
+            // Event listeners
+            document.getElementById('startScanner').addEventListener('click', startScanner);
+            document.getElementById('stopScanner').addEventListener('click', stopScanner);
+            document.getElementById('switchCamera').addEventListener('click', switchCamera);
+            document.getElementById('searchBtn').addEventListener('click', manualSearch);
+            document.getElementById('manualSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') manualSearch();
+            });
+            
+            document.getElementById('cameraSelect').addEventListener('change', function() {
+                if (currentStream) {
+                    stopScanner();
+                    setTimeout(startScanner, 500);
+                }
+            });
+            
+            // Initialize stats
+            updateStats();
+            
+            showAlert('Scanner initialized successfully!', 'success');
+        });
+
+        // Initialize HTML5 QR Scanner
+        function initializeScanner() {
+            try {
+                // Check if browser supports camera
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showAlert('Camera not supported in this browser', 'danger');
+                    return;
+                }
+                
+                console.log('Scanner initialized');
+            } catch (error) {
+                console.error('Scanner init error:', error);
+                showAlert('Scanner initialization failed: ' + error.message, 'danger');
+            }
+        }
+
+        // Load available cameras
+        async function loadCameras() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                cameras = devices.filter(device => device.kind === 'videoinput');
+                
+                const cameraSelect = document.getElementById('cameraSelect');
+                cameraSelect.innerHTML = '<option value="">Auto-select Camera</option>';
+                
+                cameras.forEach((camera, index) => {
+                    const option = document.createElement('option');
+                    option.value = camera.deviceId;
+                    option.text = camera.label || `Camera ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+                
+                if (cameras.length > 0) {
+                    showAlert(`Found ${cameras.length} camera(s)`, 'success');
+                } else {
+                    showAlert('No cameras found', 'warning');
+                }
+            } catch (error) {
+                console.error('Camera loading error:', error);
+                showAlert('Error loading cameras: ' + error.message, 'warning');
+            }
+        }
+
+        // Start Scanner - SIMPLE AND WORKING METHOD
+        async function startScanner() {
+            const startBtn = document.getElementById('startScanner');
+            const stopBtn = document.getElementById('stopScanner');
+            const video = document.getElementById('video');
+            const placeholder = document.getElementById('scannerPlaceholder');
+            const statusBadge = document.getElementById('scannerStatus');
+            
+            try {
+                // Stop any existing stream
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Get camera constraints
+                const cameraSelect = document.getElementById('cameraSelect');
+                const deviceId = cameraSelect.value;
+                
+                const constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                // If specific camera selected
+                if (deviceId) {
+                    constraints.video.deviceId = { exact: deviceId };
+                }
+                
+                // Request camera access
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                // Set video source
+                video.srcObject = currentStream;
+                video.play();
+                
+                // Update UI
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'Live';
+                
+                showAlert('Camera started successfully!', 'success');
+                addActivity('Camera started');
+                
+                // Initialize HTML5 QR Code Scanner
+                startQrCodeScanner();
+                
+            } catch (error) {
+                console.error('Camera start error:', error);
+                
+                // Show user-friendly error message
+                let errorMessage = 'Failed to access camera: ';
+                if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                    errorMessage += 'No camera found';
+                } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    errorMessage += 'Camera permission denied';
+                } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                    errorMessage += 'Camera is already in use';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showAlert(errorMessage, 'danger');
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.textContent = 'Error';
+            }
+        }
+
+        // Start QR Code Scanner
+        function startQrCodeScanner() {
+            try {
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("video");
+                }
+                
+                const qrboxSize = 250;
+                const config = { fps: 10, qrbox: qrboxSize };
+                
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    onScanSuccess,
+                    onScanError
+                ).catch(err => {
+                    console.error("QR Scanner start error:", err);
+                });
+                
+            } catch (error) {
+                console.error("QR Scanner error:", error);
+            }
+        }
+
+        // On scan success
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scanned: ${decodedText}`);
+            
+            // Visual feedback
+            const scanLine = document.querySelector('.scan-line');
+            scanLine.style.animation = 'none';
+            scanLine.style.background = 'linear-gradient(90deg, transparent, #ff0000, transparent)';
+            
+            setTimeout(() => {
+                scanLine.style.animation = 'scan 2s linear infinite';
+                scanLine.style.background = 'linear-gradient(90deg, transparent, #00ff88, transparent)';
+            }, 300);
+            
+            // Process the scan
+            processScannedCode(decodedText);
+            
+            // Stop scanner temporarily to prevent multiple scans
+            setTimeout(() => {
+                if (html5QrCode && currentStream) {
+                    // Scanner continues automatically
+                }
+            }, 1000);
+        }
+
+        // On scan error
+        function onScanError(error) {
+            // Don't show error messages for normal operation
+            // console.log("Scan error (normal):", error);
+        }
+
+        // Process scanned code
+        function processScannedCode(code) {
+            // Clean the code
+            code = code.trim();
+            
+            // Find file
+            let file = sampleFiles.find(f => f.id === code);
+            
+            if (!file) {
+                // Try partial match
+                file = sampleFiles.find(f => 
+                    f.id.toLowerCase().includes(code.toLowerCase()) ||
+                    f.name.toLowerCase().includes(code.toLowerCase())
+                );
+            }
+            
+            if (file) {
+                displayFileDetails(file);
+                showAlert(`✅ File found: ${file.name}`, 'success');
+                addActivity(`Scanned: ${file.id}`);
+            } else {
+                showAlert(`❌ File not found: ${code}`, 'warning');
+                addActivity(`Unknown scan: ${code}`);
+            }
+        }
+
+        // Stop Scanner
+        function stopScanner() {
+            const startBtn = document.getElementById('startScanner');
+            const stopBtn = document.getElementById('stopScanner');
+            const video = document.getElementById('video');
+            const placeholder = document.getElementById('scannerPlaceholder');
+            const statusBadge = document.getElementById('scannerStatus');
+            
+            // Stop QR Scanner
+            if (html5QrCode) {
+                html5QrCode.stop().catch(err => {
+                    console.error("Stop error:", err);
+                });
+                html5QrCode = null;
+            }
+            
+            // Stop camera stream
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            
+            // Update UI
+            video.style.display = 'none';
+            video.srcObject = null;
+            placeholder.style.display = 'flex';
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusBadge.className = 'badge bg-warning';
+            statusBadge.textContent = 'Stopped';
+            
+            showAlert('Scanner stopped', 'info');
+            addActivity('Scanner stopped');
+        }
+
+        // Switch Camera
+        function switchCamera() {
+            if (cameras.length < 2) {
+                showAlert('Only one camera available', 'warning');
+                return;
+            }
+            
+            currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+            const cameraSelect = document.getElementById('cameraSelect');
+            cameraSelect.value = cameras[currentCameraIndex].deviceId;
+            
+            if (currentStream) {
+                stopScanner();
+                setTimeout(startScanner, 500);
+            }
+        }
+
+        // Display file details
+        function displayFileDetails(file) {
+            const detailsCard = document.getElementById('fileDetailsCard');
+            const fileDetails = document.getElementById('fileDetails');
+            
+            let statusBadge = '';
+            if (file.status === 'IN') {
+                statusBadge = '<span class="status-badge status-in">AVAILABLE</span>';
+            } else if (file.status === 'OUT') {
+                statusBadge = '<span class="status-badge status-out">CHECKED OUT</span>';
+            } else if (file.status === 'OVERDUE') {
+                statusBadge = '<span class="status-badge status-overdue">OVERDUE</span>';
+            }
+            
+            fileDetails.innerHTML = `
+                <div class="file-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="mb-1">${file.name}</h4>
+                            <p class="text-muted mb-0">ID: ${file.id}</p>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Department:</strong> ${file.department}</p>
+                            <p><strong>Location:</strong> ${file.location}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong> ${file.status}</p>
+                            ${file.dueDate ? `<p><strong>Due Date:</strong> ${file.dueDate}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Actions:</h6>
+                        <div class="btn-group">
+                            ${file.status === 'IN' ? 
+                                `<button class="btn btn-success" onclick="checkOutFile('${file.id}')">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Check Out
+                                </button>` : 
+                                `<button class="btn btn-primary" onclick="checkInFile('${file.id}')">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Check In
+                                </button>`}
+                            <button class="btn btn-info" onclick="viewHistory('${file.id}')">
+                                <i class="fas fa-history me-2"></i>History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            detailsCard.style.display = 'block';
+            updateStats();
+        }
+
+        // Manual search
+        function manualSearch() {
+            const query = document.getElementById('manualSearch').value.trim();
+            if (!query) {
+                showAlert('Please enter search query', 'warning');
+                return;
+            }
+            
+            const file = sampleFiles.find(f => 
+                f.id.toLowerCase().includes(query.toLowerCase()) ||
+                f.name.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if (file) {
+                displayFileDetails(file);
+                showAlert(`Found: ${file.name}`, 'success');
+                addActivity(`Manual search: "${query}"`);
+            } else {
+                showAlert(`No files found for: "${query}"`, 'danger');
+            }
+        }
+
+        // Check out file
+        function checkOutFile(fileId) {
+            const file = sampleFiles.find(f => f.id === fileId);
+            if (file) {
+                file.status = 'OUT';
+                file.dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                displayFileDetails(file);
+                updateStats();
+                showAlert(`File ${fileId} checked out`, 'success');
+                addActivity(`Checked out: ${fileId}`);
+            }
+        }
+
+        // Check in file
+        function checkInFile(fileId) {
+            const file = sampleFiles.find(f => f.id === fileId);
+            if (file) {
+                file.status = 'IN';
+                file.dueDate = null;
+                displayFileDetails(file);
+                updateStats();
+                showAlert(`File ${fileId} checked in`, 'success');
+                addActivity(`Checked in: ${fileId}`);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalFiles = sampleFiles.length;
+            const availableFiles = sampleFiles.filter(f => f.status === 'IN').length;
+            const checkedOutFiles = sampleFiles.filter(f => f.status === 'OUT').length;
+            const overdueFiles = sampleFiles.filter(f => f.status === 'OVERDUE').length;
+            
+            document.getElementById('totalFiles').textContent = totalFiles;
+            document.getElementById('availableFiles').textContent = availableFiles;
+            document.getElementById('checkedOutFiles').textContent = checkedOutFiles;
+            document.getElementById('overdueFiles').textContent = overdueFiles;
+        }
+
+        // Add activity
+        function addActivity(message) {
+            const activityDiv = document.getElementById('recentActivity');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const activityItem = document.createElement('div');
+            activityItem.className = 'alert alert-light';
+            activityItem.innerHTML = `
+                <small class="text-muted">${timeString}</small>
+                <p class="mb-0">${message}</p>
+            `;
+            
+            activityDiv.insertBefore(activityItem, activityDiv.firstChild);
+            
+            // Keep only 5 items
+            if (activityDiv.children.length > 5) {
+                activityDiv.removeChild(activityDiv.lastChild);
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            
+            // Remove existing alerts
+            const existingAlerts = alertContainer.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+            
+            // Create alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} custom-alert`;
+            alertDiv.style.cssText = `
+                min-width: 300px;
+                margin-bottom: 10px;
+                transition: opacity 0.3s;
+            `;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'danger') icon = 'exclamation-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            if (type === 'info') icon = 'info-circle';
+            
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${icon} fa-lg me-3"></i>
+                    <div>
+                        <strong>${type.toUpperCase()}:</strong> ${message}
+                    </div>
+                </div>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.style.opacity = '0';
+                    setTimeout(() => alertDiv.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Helper functions for testing
+        function simulateScan() {
+            const testCodes = ['FILE-001', 'FILE-002', 'FILE-003', 'FILE-004', 'FILE-005'];
+            const randomCode = testCodes[Math.floor(Math.random() * testCodes.length)];
+            processScannedCode(randomCode);
+            showAlert(`Test scan: ${randomCode}`, 'info');
+        }
+        
+        function checkOutRandom() {
+            const availableFiles = sampleFiles.filter(f => f.status === 'IN');
+            if (availableFiles.length > 0) {
+                const randomFile = availableFiles[Math.floor(Math.random() * availableFiles.length)];
+                checkOutFile(randomFile.id);
+            } else {
+                showAlert('No available files to checkout', 'warning');
+            }
+        }
+        
+        function showAllFiles() {
+            window.location.href = 'file-list.html';
+        }
+        
+        function viewHistory(fileId) {
+            window.location.href = `movement-history.html?fileId=${fileId}`;
+        }
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            stopScanner();
+        });
+    </script>
+</body>
+</html>

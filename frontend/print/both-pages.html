@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Both Pages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .print-button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px;
+        }
+        
+        .note {
+            margin: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="note">
+        <h2>Print Both Pages</h2>
+        <p>Click the button below to print both the barcode page (A5) and index page (A4).</p>
+        <p>Make sure to select the correct paper size for each page when printing.</p>
+    </div>
+    
+    <button class="print-button" onclick="printBoth()">
+        Print Both Pages
+    </button>
+
+    <script>
+        function printBoth() {
+            // Get URL parameters
+            const params = new URLSearchParams(window.location.search);
+            
+            // Open barcode page for printing (A5)
+            const barcodeWindow = window.open(`barcode-page.html?${params.toString()}&autoPrint=true`, '_blank');
+            
+            // After a delay, open index page for printing (A4)
+            setTimeout(() => {
+                const indexWindow = window.open(`index-page.html?${params.toString()}&autoPrint=true`, '_blank');
+            }, 1000);
+        }
+        
+        // Auto-print both if parameter is set
+        function checkAutoPrint() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('autoPrint') === 'true') {
+                printBoth();
+            }
+        }
+        
+        window.onload = checkAutoPrint;
+    </script>
+</body>
+</html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create File - FMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Barcode Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <style>
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        .qr-code-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .real-barcode {
+            width: 100%;
+            max-width: 300px;
+            height: 80px;
+            margin: 10px auto;
+            background: white;
+            padding: 5px;
+        }
+        svg.barcode {
+            max-width: 100%;
+            height: auto;
+        }
+        .small-barcode {
+            width: 200px;
+            height: 50px;
+            margin: 5px auto;
+        }
+        .label-container {
+            background: white;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            margin: 10px auto;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <i class="fas fa-folder"></i> FMS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a class="nav-link active" href="create-file.html"><i class="fas fa-plus-circle"></i> Create File</a>
+                <a class="nav-link" href="file-list.html"><i class="fas fa-list"></i> File List</a>
+                <a class="nav-link" href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="mb-4"><i class="fas fa-plus-circle"></i> Create New File</h2>
+                
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-alt"></i> File Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="createFileForm">
+                            <div class="form-section">
+                                <h6 class="mb-3 text-primary"><i class="fas fa-building"></i> Company Details</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="company" class="form-label required-field">Select Company</label>
+                                            <div class="input-group">
+                                                <select class="form-select" id="company" required>
+                                                    <option value="">-- Select Company --</option>
+                                                    <option value="ABC Corporation">ABC Corporation</option>
+                                                    <option value="XYZ Enterprises">XYZ Enterprises</option>
+                                                    <option value="Global Solutions Ltd">Global Solutions Ltd</option>
+                                                    <option value="Tech Innovators Inc">Tech Innovators Inc</option>
+                                                    <option value="Finance Masters LLC">Finance Masters LLC</option>
+                                                </select>
+                                                <button class="btn btn-outline-primary" type="button" onclick="window.location.href='companies.html'" title="Add New Company">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted">Don't see your company? Click + to add a new one.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="department" class="form-label">Department</label>
+                                            <select class="form-select" id="department">
+                                                <option value="">-- Select Department --</option>
+                                                <option value="Human Resources">Human Resources</option>
+                                                <option value="Finance">Finance</option>
+                                                <option value="Legal">Legal</option>
+                                                <option value="IT Department">IT Department</option>
+                                                <option value="Marketing">Marketing</option>
+                                                <option value="Sales">Sales</option>
+                                                <option value="Operations">Operations</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h6 class="mb-3 text-primary"><i class="fas fa-file-signature"></i> File Details</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="fileTitle" class="form-label required-field">File Title/Name</label>
+                                            <input type="text" class="form-control" id="fileTitle" 
+                                                   placeholder="Enter file title" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="preparedBy" class="form-label required-field">Prepared By</label>
+                                            <input type="text" class="form-control" id="preparedBy" 
+                                                   placeholder="Enter preparer name" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="purpose" class="form-label required-field">Purpose of File</label>
+                                            <textarea class="form-control" id="purpose" rows="3" 
+                                                      placeholder="Describe the purpose" required></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Brief description of file contents</label>
+                                            <textarea class="form-control" id="description" rows="3" 
+                                                      placeholder="Brief description of file contents"></textarea>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="responsiblePerson" class="form-label required-field">Responsible Person (Owner)</label>
+                                            <select class="form-select" id="responsiblePerson" required>
+                                                <option value="">-- Select Responsible Person --</option>
+                                                <option value="John Smith - HR Manager">John Smith - HR Manager</option>
+                                                <option value="Sarah Johnson - Finance Head">Sarah Johnson - Finance Head</option>
+                                                <option value="Mike Wilson - Legal Advisor">Mike Wilson - Legal Advisor</option>
+                                                <option value="David Brown - IT Director">David Brown - IT Director</option>
+                                                <option value="Emma Wilson - Marketing Head">Emma Wilson - Marketing Head</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="rackLocation" class="form-label required-field">Rack/Shelf Location</label>
+                                            <select class="form-select" id="rackLocation" required>
+                                                <option value="">-- Select Rack Location --</option>
+                                                <option value="Rack A - Shelf 1">Rack A - Shelf 1</option>
+                                                <option value="Rack A - Shelf 2">Rack A - Shelf 2</option>
+                                                <option value="Rack A - Shelf 3">Rack A - Shelf 3</option>
+                                                <option value="Rack B - Shelf 1">Rack B - Shelf 1</option>
+                                                <option value="Rack B - Shelf 2">Rack B - Shelf 2</option>
+                                                <option value="Rack C - Shelf 1">Rack C - Shelf 1</option>
+                                                <option value="Rack C - Shelf 2">Rack C - Shelf 2</option>
+                                                <option value="Rack C - Shelf 3">Rack C - Shelf 3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-3">
+                                <h6><i class="fas fa-info-circle"></i> After submission, system will generate:</h6>
+                                <ul class="mb-0">
+                                    <li><i class="fas fa-id-badge"></i> Unique File ID</li>
+                                    <li><i class="fas fa-qrcode"></i> QR Code for file tracking</li>
+                                    <li><i class="fas fa-barcode"></i> Printable barcode label</li>
+                                    <li><i class="fas fa-print"></i> Index page for file</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="dashboard.html" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                    <i class="fas fa-save"></i> Create File & Generate QR Code
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Generated QR Code Section (Hidden by default, shown after form submission) -->
+                <div class="card shadow mt-4 d-none" id="qrSection">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-qrcode"></i> File Created Successfully!</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="qr-code-display">
+                                    <h6><i class="fas fa-barcode"></i> SCANNABLE BARCODE</h6>
+                                    <div class="small-barcode" id="realBarcodeContainer">
+                                        <!-- Real barcode will be generated here -->
+                                    </div>
+                                    <div id="generatedFileId" class="h5 mt-2 text-primary"></div>
+                                    <p class="text-muted"><small>Scan this barcode with any barcode scanner</small></p>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h6><i class="fas fa-info-circle"></i> File Summary</h6>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>File Name:</strong></td>
+                                            <td id="summaryFileName">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Company:</strong></td>
+                                            <td id="summaryCompany">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Created By:</strong></td>
+                                            <td id="summaryCreatedBy">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Location:</strong></td>
+                                            <td id="summaryLocation">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Created Date:</strong></td>
+                                            <td id="summaryDate">-</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="qr-code-display">
+                                    <h6><i class="fas fa-print"></i> PRINTABLE LABEL</h6>
+                                    <div class="label-container">
+                                        <div class="small-barcode" id="printBarcodeContainer"></div>
+                                        <div id="printableFileId" class="h6 mb-2 text-center"></div>
+                                        <div class="text-center">
+                                            <small class="text-muted">FMS File Label</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted mt-2"><small>Cut and attach to physical file</small></p>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h6><i class="fas fa-print"></i> Print Options</h6>
+                                    <p><small>Print the following pages for your physical file:</small></p>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" id="printBarcodeBtn">
+                                            <i class="fas fa-print"></i> Print Barcode Page (A5)
+                                        </button>
+                                        <button class="btn btn-outline-success" id="printIndexBtn">
+                                            <i class="fas fa-print"></i> Print Index Page (A4)
+                                        </button>
+                                        <button class="btn btn-outline-info" id="printBothBtn">
+                                            <i class="fas fa-print"></i> Print Both Pages
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="alert alert-warning mt-3">
+                                        <small>
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>Printing Tips:</strong><br>
+                                            Barcode page: A5 paper (148mm × 210mm)<br>
+                                            Index page: A4 paper (210mm × 297mm)
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <a href="create-file.html" class="btn btn-outline-secondary">
+                                        <i class="fas fa-plus"></i> Create Another File
+                                    </a>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <a href="file-list.html" class="btn btn-primary">
+                                        <i class="fas fa-list"></i> View All Files
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Then Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Store generated file data
+        let currentFileData = {};
+        
+        // Wait for DOM to be fully loaded
+        $(document).ready(function() {
+            console.log("Create File page loaded with JsBarcode");
+            
+            // Handle form submission
+            $('#createFileForm').on('submit', function(event) {
+                event.preventDefault();
+                createFile();
+            });
+            
+            // Handle print button clicks
+            $('#printBarcodeBtn').on('click', function() {
+                printBarcodePage();
+            });
+            
+            $('#printIndexBtn').on('click', function() {
+                printIndexPage();
+            });
+            
+            $('#printBothBtn').on('click', function() {
+                printBothPages();
+            });
+        });
+        
+        // Main create file function
+        function createFile() {
+            // Get all form values
+            const company = $('#company').val();
+            const fileTitle = $('#fileTitle').val();
+            const preparedBy = $('#preparedBy').val();
+            const purpose = $('#purpose').val();
+            const responsiblePerson = $('#responsiblePerson').val();
+            const rackLocation = $('#rackLocation').val();
+            const description = $('#description').val();
+            const department = $('#department').val();
+            
+            // Validation
+            if (!company || !fileTitle || !preparedBy || !purpose || !responsiblePerson || !rackLocation) {
+                alert('Please fill all required fields marked with *');
+                return false;
+            }
+            
+            // Generate file ID
+            const fileId = generateFileId();
+            
+            // Store file data
+            currentFileData = {
+                fileName: fileTitle,
+                companyName: company,
+                createdBy: preparedBy,
+                fileLocation: rackLocation,
+                creationDate: new Date().toLocaleDateString(),
+                purpose: purpose,
+                responsiblePerson: responsiblePerson,
+                department: department,
+                fileId: fileId,
+                preparedBySignature: preparedBy,
+                approvedBySignature: 'Approving Authority',
+                description: description || 'No description provided'
+            };
+            
+            // Show success message
+            alert(`✅ File created successfully! File ID: ${fileId}`);
+            
+            // Show QR section
+            $('#qrSection').removeClass('d-none');
+            
+            // Update summary information
+            $('#generatedFileId').text(fileId);
+            $('#printableFileId').text(fileId);
+            $('#summaryFileName').text(fileTitle);
+            $('#summaryCompany').text(company);
+            $('#summaryCreatedBy').text(preparedBy);
+            $('#summaryLocation').text(rackLocation);
+            $('#summaryDate').text(currentFileData.creationDate);
+            
+            // Generate real barcodes
+            generateRealBarcode(fileId, 'realBarcodeContainer');
+            generateRealBarcode(fileId, 'printBarcodeContainer');
+            
+            // Scroll to QR section
+            $('html, body').animate({
+                scrollTop: $('#qrSection').offset().top - 20
+            }, 500);
+            
+            return false;
+        }
+        
+        // Generate unique File ID
+        function generateFileId() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const randomNum = Math.floor(Math.random() * 1000);
+            
+            return `FMS-${year}${month}${day}-${String(randomNum).padStart(3, '0')}`;
+        }
+        
+        // Generate real scannable barcode
+        function generateRealBarcode(fileId, containerId) {
+            // Clear previous barcode
+            $('#' + containerId).empty();
+            
+            // Create SVG element for barcode
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("id", "barcode-" + containerId);
+            $('#' + containerId).append(svg);
+            
+            // Generate barcode using JsBarcode
+            try {
+                JsBarcode("#barcode-" + containerId, fileId, {
+                    format: "CODE128",
+                    width: 1.5,
+                    height: 40,
+                    displayValue: false,
+                    background: "white",
+                    lineColor: "#000000",
+                    margin: 5
+                });
+            } catch (error) {
+                console.error("Barcode generation error:", error);
+                // Fallback to text if barcode fails
+                $('#' + containerId).html(`<div class="text-danger">Barcode: ${fileId}</div>`);
+            }
+        }
+        
+        // Print Barcode Page
+        function printBarcodePage() {
+            if (!currentFileData.fileId) {
+                alert('Please create a file first');
+                return;
+            }
+            
+            // Create URL parameters
+            const params = new URLSearchParams(currentFileData).toString();
+            
+            // Open in new window
+            const printWindow = window.open(`../print/barcode-page.html?${params}&autoPrint=true`, '_blank');
+            
+            if (printWindow) {
+                printWindow.focus();
+            }
+        }
+        
+        // Print Index Page
+        function printIndexPage() {
+            if (!currentFileData.fileId) {
+                alert('Please create a file first');
+                return;
+            }
+            
+            // Create URL parameters
+            const params = new URLSearchParams(currentFileData).toString();
+            
+            // Open in new window
+            const printWindow = window.open(`../print/index-page.html?${params}&autoPrint=true`, '_blank');
+            
+            if (printWindow) {
+                printWindow.focus();
+            }
+        }
+        
+        // Print Both Pages
+        function printBothPages() {
+            if (!currentFileData.fileId) {
+                alert('Please create a file first');
+                return;
+            }
+            
+            // Create URL parameters
+            const params = new URLSearchParams(currentFileData).toString();
+            
+            // Open barcode page
+            window.open(`../print/barcode-page.html?${params}&autoPrint=true`, '_blank');
+            
+            // After a short delay, open index page
+            setTimeout(() => {
+                window.open(`../print/index-page.html?${params}&autoPrint=true`, '_blank');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
