@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
 </head>
 <body>
 <style>
@@ -19,9 +20,39 @@
         object-fit: cover;
         border: 2px solid #667eea;
     }
+    
+    /* Mobile Menu Button - Force Display */
+    @media (max-width: 991px) {
+        #menu-toggle {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        #menu-toggle {
+            display: none !important;
+        }
+    }
+    
+    /* Debug - Make sure wrapper is correct */
+    #wrapper {
+        position: relative;
+    }
+    
+    /* Test - Add visible change when toggled */
+    #wrapper.toggled #sidebar-wrapper {
+        transform: translateX(0) !important;
+    }
 </style>
+    
     <!-- Sidebar -->
     <div class="d-flex" id="wrapper">
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+        
         <div class="bg-primary text-white" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4">
                 <h3><i class="fas fa-folder"></i> FMS</h3>
@@ -339,12 +370,46 @@
         // Attach logout handlers
         document.getElementById('logoutBtn').addEventListener('click', handleLogout);
         document.getElementById('sidebarLogoutBtn').addEventListener('click', handleLogout);
+    </script>
 
-        // Menu toggle
-        document.getElementById('menu-toggle').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('wrapper').classList.toggle('toggled');
-        });
+    <!-- Menu Toggle Script - Simplified -->
+    <script>
+        // Menu toggle - runs immediately
+        (function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const wrapper = document.getElementById('wrapper');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            
+            if (menuToggle && wrapper) {
+                // Toggle menu on button click
+                menuToggle.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    wrapper.classList.toggle('toggled');
+                    console.log('Menu toggled, classes:', wrapper.className);
+                };
+                
+                // Close menu on overlay click
+                if (mobileOverlay) {
+                    mobileOverlay.onclick = function() {
+                        wrapper.classList.remove('toggled');
+                    };
+                }
+                
+                // Close menu when clicking sidebar links
+                document.querySelectorAll('#sidebar-wrapper a').forEach(function(link) {
+                    link.onclick = function() {
+                        if (window.innerWidth < 992) {
+                            wrapper.classList.remove('toggled');
+                        }
+                    };
+                });
+                
+                console.log('Mobile menu initialized successfully');
+            } else {
+                console.error('Menu toggle elements not found!');
+            }
+        })();
     </script>
     <script src="../assets/js/app.js"></script>
 </body>
