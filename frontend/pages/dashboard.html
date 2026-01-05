@@ -117,6 +117,287 @@
             text-align: center;
         }
     }
+    
+    /* Attractive User Section Styling */
+    .user-section {
+        position: fixed;
+        top: 20px;
+        right: 30px;
+        z-index: 1000;
+    }
+    
+    .user-dropdown-toggle {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 8px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+    }
+    
+    .user-dropdown-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        color: white;
+    }
+    
+    .user-dropdown-toggle .navbar-user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .user-dropdown-toggle span {
+        font-weight: 600;
+        margin-right: 8px;
+        font-size: 15px;
+    }
+    
+    .user-dropdown-toggle i {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+    
+    .user-section .dropdown-menu {
+        border: none;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        padding: 8px;
+        margin-top: 8px;
+        min-width: 200px;
+    }
+    
+    .user-section .dropdown-item {
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin: 2px 0;
+        transition: all 0.2s ease;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .user-section .dropdown-item:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateX(4px);
+    }
+    
+    .user-section .dropdown-item i {
+        width: 20px;
+        margin-right: 10px;
+        text-align: center;
+    }
+    
+    .user-section .dropdown-divider {
+        margin: 8px 0;
+        opacity: 0.1;
+    }
+    
+    @media (max-width: 768px) {
+        .user-section {
+            top: 10px;
+            right: 10px;
+        }
+        
+        .user-dropdown-toggle {
+            padding: 6px 12px;
+        }
+        
+        .user-dropdown-toggle .navbar-user-avatar {
+            width: 32px;
+            height: 32px;
+            margin-right: 6px;
+        }
+        
+        .user-dropdown-toggle span {
+            font-size: 13px;
+            display: none; /* Hide username on very small screens */
+        }
+        
+        #menu-toggle {
+            top: 10px !important;
+            left: 10px !important;
+            padding: 8px 16px !important;
+        }
+        
+        .container-fluid.px-4 {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+            margin-top: 70px !important; /* Space for fixed buttons */
+        }
+        
+        .container-fluid h2 {
+            font-size: 1.5rem !important;
+            margin-top: 10px !important;
+        }
+    }
+    
+    @media (min-width: 576px) and (max-width: 768px) {
+        .user-dropdown-toggle span {
+            display: inline; /* Show username on larger mobile screens */
+        }
+    }
+    
+    /* Enhanced Mobile Responsive Styles for Android/iOS */
+    @media (max-width: 991px) {
+        #page-content-wrapper {
+            padding-top: 0;
+            min-height: 100vh;
+        }
+        
+        /* Stack cards vertically on mobile */
+        .col-xl-3, .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        /* Adjust card sizing for mobile */
+        .card {
+            margin-bottom: 15px;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        /* Responsive table */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Touch-friendly tap targets */
+        .btn {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* Adjust chart containers */
+        .chart-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        /* Mobile-optimized dropdown */
+        .user-section .dropdown-menu {
+            right: 0;
+            left: auto;
+            min-width: 180px;
+        }
+    }
+    
+    /* Tablet responsive */
+    @media (min-width: 768px) and (max-width: 991px) {
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        
+        .container-fluid.px-4 {
+            margin-top: 80px !important;
+        }
+    }
+    
+    /* Small mobile devices */
+    @media (max-width: 576px) {
+        .user-dropdown-toggle {
+            padding: 6px 10px;
+        }
+        
+        .card-body .h5 {
+            font-size: 1.1rem;
+        }
+        
+        .card-body i.fa-2x {
+            font-size: 1.5rem;
+        }
+        
+        /* Optimize spacing */
+        .mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        /* Full width buttons */
+        .btn-block-mobile {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+    
+    /* iOS specific fixes */
+    @supports (-webkit-touch-callout: none) {
+        .user-dropdown-toggle,
+        #menu-toggle {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Fix iOS input zoom */
+        input, select, textarea {
+            font-size: 16px;
+        }
+        
+        /* Prevent iOS bounce scroll */
+        body {
+            position: fixed;
+            width: 100%;
+        }
+        
+        #page-content-wrapper {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+    
+    /* Android specific optimizations */
+    @media screen and (max-width: 991px) {
+        /* Optimize for Android Chrome */
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        
+        /* Better touch feedback */
+        button, a {
+            touch-action: manipulation;
+        }
+        
+        /* Prevent layout shift on keyboard open */
+        .container-fluid {
+            min-height: auto;
+        }
+    }
+    
+    /* Landscape mode optimization */
+    @media (max-width: 991px) and (orientation: landscape) {
+        .container-fluid.px-4 {
+            margin-top: 60px !important;
+        }
+        
+        #menu-toggle {
+            padding: 6px 14px !important;
+        }
+        
+        .user-dropdown-toggle {
+            padding: 4px 10px;
+        }
+    }
+    
+    /* Ultra-wide mobile screens */
+    @media (min-width: 992px) and (max-width: 1199px) {
+        .col-xl-3 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
 </style>
     
     <!-- Sidebar -->
@@ -169,29 +450,28 @@
 
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-                <div class="container-fluid">
-                    <button class="btn btn-primary" id="menu-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="navbar-nav ms-auto">
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <img id="navbarAvatar" class="navbar-user-avatar" src="https://ui-avatars.com/api/?name=User&background=667eea&color=fff&size=32" alt="Avatar">
-                                <span id="userDisplayName">Loading...</span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
-                        </div>
-                    </div>
+            <!-- Attractive User Section -->
+            <div class="user-section">
+                <div class="dropdown">
+                    <a class="user-dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img id="navbarAvatar" class="navbar-user-avatar" src="https://ui-avatars.com/api/?name=User&background=667eea&color=fff&size=36" alt="Avatar">
+                        <span id="userDisplayName">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
                 </div>
-            </nav>
+            </div>
+            
+            <button class="btn btn-primary" id="menu-toggle" style="position: fixed; top: 20px; left: 20px; z-index: 999; border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);">
+                <i class="fas fa-bars"></i>
+            </button>
 
-            <div class="container-fluid mt-4">
+            <div class="container-fluid px-4" style="margin-top: 80px;">
                 <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
                 
                 <!-- Quick Stats -->
