@@ -21,35 +21,106 @@
         border: 2px solid #667eea;
     }
     
-    /* Mobile Menu Button - Force Display */
-    @media (max-width: 991px) {
-        #menu-toggle {
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-        }
+    /* Mobile Overlay */
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        -webkit-tap-highlight-color: transparent;
     }
     
-    @media (min-width: 992px) {
-        #menu-toggle {
-            display: none !important;
-        }
+    #wrapper.toggled .mobile-overlay {
+        display: block !important;
     }
     
-    /* Debug - Make sure wrapper is correct */
+    /* Ensure wrapper can contain overlays */
+    body {
+        overflow-x: hidden;
+    }
+    
     #wrapper {
         position: relative;
+        overflow-x: hidden;
+        display: block;
     }
     
-    /* Test - Add visible change when toggled */
-    #wrapper.toggled #sidebar-wrapper {
-        transform: translateX(0) !important;
+    /* Force mobile sidebar behavior */
+    @media (max-width: 991px) {
+        #sidebar-wrapper {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            height: 100vh !important;
+            width: 250px !important;
+            transform: translateX(-100%) !important;
+            transition: transform 0.3s ease-in-out !important;
+            z-index: 1050 !important;
+        }
+        
+        #wrapper.toggled #sidebar-wrapper {
+            transform: translateX(0) !important;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
+        }
+        
+        #page-content-wrapper {
+            width: 100% !important;
+            margin-left: 0 !important;
+        }
+        
+        body.menu-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+        
+        /* Make sidebar dropdown display inline on mobile */
+        #sidebar-wrapper .dropdown-menu {
+            position: static !important;
+            float: none !important;
+            transform: none !important;
+            display: none;
+            width: 100%;
+            margin: 0;
+            border: none;
+            border-radius: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            box-shadow: none;
+            padding: 0;
+        }
+        
+        #sidebar-wrapper .dropdown.show .dropdown-menu {
+            display: block !important;
+        }
+        
+        #sidebar-wrapper .dropdown-item {
+            color: white;
+            padding: 0.75rem 1.25rem 0.75rem 3rem;
+            background-color: transparent;
+            border: none;
+            font-size: 0.95rem;
+        }
+        
+        #sidebar-wrapper .dropdown-item:hover,
+        #sidebar-wrapper .dropdown-item:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        
+        #sidebar-wrapper .dropdown-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
     }
 </style>
     
     <!-- Sidebar -->
-    <div class="d-flex" id="wrapper">
+    <div id="wrapper">
         <!-- Mobile Overlay -->
         <div class="mobile-overlay" id="mobileOverlay"></div>
         
@@ -120,7 +191,7 @@
                 </div>
             </nav>
 
-            <div class="container-fluid px-4 mt-4">
+            <div class="container-fluid mt-4">
                 <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
                 
                 <!-- Quick Stats -->
@@ -372,45 +443,75 @@
         document.getElementById('sidebarLogoutBtn').addEventListener('click', handleLogout);
     </script>
 
-    <!-- Menu Toggle Script - Simplified -->
+    <script src="../assets/js/app.js"></script>
+    
+    <!-- Mobile Menu Enhancement Script -->
     <script>
-        // Menu toggle - runs immediately
-        (function() {
-            const menuToggle = document.getElementById('menu-toggle');
-            const wrapper = document.getElementById('wrapper');
+        document.addEventListener('DOMContentLoaded', function() {
             const mobileOverlay = document.getElementById('mobileOverlay');
+            const wrapper = document.getElementById('wrapper');
+            const body = document.body;
             
-            if (menuToggle && wrapper) {
-                // Toggle menu on button click
-                menuToggle.onclick = function(e) {
+            // Close menu on overlay click
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    wrapper.classList.remove('toggled');
+                    body.classList.remove('menu-open');
+                });
+            }
+            
+            // Manual dropdown toggle for sidebar on mobile
+            const sidebarDropdown = document.querySelector('#sidebar-wrapper .dropdown');
+            const dropdownToggle = document.querySelector('#sidebar-wrapper .dropdown-toggle');
+            
+            if (dropdownToggle && sidebarDropdown) {
+                dropdownToggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    wrapper.classList.toggle('toggled');
-                    console.log('Menu toggled, classes:', wrapper.className);
-                };
-                
-                // Close menu on overlay click
-                if (mobileOverlay) {
-                    mobileOverlay.onclick = function() {
-                        wrapper.classList.remove('toggled');
-                    };
-                }
-                
-                // Close menu when clicking sidebar links
-                document.querySelectorAll('#sidebar-wrapper a').forEach(function(link) {
-                    link.onclick = function() {
-                        if (window.innerWidth < 992) {
-                            wrapper.classList.remove('toggled');
-                        }
-                    };
+                    
+                    // Toggle the dropdown
+                    sidebarDropdown.classList.toggle('show');
+                    
+                    console.log('Dropdown toggled:', sidebarDropdown.classList.contains('show'));
                 });
-                
-                console.log('Mobile menu initialized successfully');
-            } else {
-                console.error('Menu toggle elements not found!');
             }
-        })();
+            
+            // Close menu when clicking sidebar links on mobile (except dropdown toggle)
+            document.querySelectorAll('#sidebar-wrapper a:not(.dropdown-toggle)').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    if (window.innerWidth < 992) {
+                        // If it's a dropdown item, don't close immediately
+                        if (!link.classList.contains('dropdown-item')) {
+                            setTimeout(function() {
+                                wrapper.classList.remove('toggled');
+                                body.classList.remove('menu-open');
+                            }, 100);
+                        } else {
+                            // For dropdown items, close the sidebar after navigation
+                            setTimeout(function() {
+                                wrapper.classList.remove('toggled');
+                                body.classList.remove('menu-open');
+                            }, 200);
+                        }
+                    }
+                });
+            });
+            
+            // Add body scroll lock when menu opens
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        if (wrapper.classList.contains('toggled') && window.innerWidth < 992) {
+                            body.classList.add('menu-open');
+                        } else {
+                            body.classList.remove('menu-open');
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(wrapper, { attributes: true });
+        });
     </script>
-    <script src="../assets/js/app.js"></script>
 </body>
 </html>

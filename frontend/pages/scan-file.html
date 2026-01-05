@@ -233,13 +233,22 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-folder me-2"></i>File Scanner Pro
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="../index.html">
+                <i class="fas fa-folder"></i> FMS - Scanner
             </a>
-            <div class="navbar-text">
-                <i class="fas fa-user-circle me-2"></i>Admin
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a class="nav-link" href="file-list.html"><i class="fas fa-list"></i> File List</a>
+                    <a class="nav-link active" href="scan-file.html"><i class="fas fa-qrcode"></i> Scan File</a>
+                    <a class="nav-link" href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
             </div>
         </div>
     </nav>

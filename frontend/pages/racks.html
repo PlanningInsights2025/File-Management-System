@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <style>
@@ -65,8 +66,6 @@
         .stat-label { font-size: 0.9rem; opacity: 0.9; }
         
         @media (max-width: 768px) {
-            #sidebar-wrapper { margin-left: -250px; }
-            #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
             .rack-stats { padding: 15px; }
             .stat-number { font-size: 1.5rem; }
         }
@@ -75,6 +74,7 @@
     </style>
 </head>
 <body>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
     <div class="d-flex" id="wrapper">
         <div class="bg-primary text-white" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4">
@@ -123,13 +123,14 @@
                     <div class="navbar-nav ms-auto">
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i> John Doe (Admin)
+                                <img id="navbarAvatar" style="width: 32px; height: 32px; border-radius: 50%; margin-right: 8px; object-fit: cover; border: 2px solid #667eea;" src="https://ui-avatars.com/api/?name=User&background=667eea&color=fff&size=32" alt="Avatar">
+                                <span id="userDisplayName">Loading...</span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                                <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                             </ul>
                         </div>
                     </div>
@@ -387,13 +388,90 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="../assets/js/app.js"></script>
+    
+    <script type="module">
+        import { auth } from '../assets/js/firebase.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        onAuthStateChanged(auth, (firebaseUser) => {
+            if (!firebaseUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                const displayName = user.username || user.email.split('@')[0];
+                const role = (user.role || 'User').charAt(0).toUpperCase() + (user.role || 'User').slice(1);
+                document.getElementById('userDisplayName').textContent = displayName + ' (' + role + ')';
+                
+                const savedAvatar = localStorage.getItem('userAvatar');
+                const avatarUrl = savedAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=667eea&color=fff&size=32`;
+                document.getElementById('navbarAvatar').src = avatarUrl;
+            } else {
+                const displayName = firebaseUser.email.split('@')[0];
+                document.getElementById('userDisplayName').textContent = displayName + ' (User)';
+                
+                const savedAvatar = localStorage.getItem('userAvatar');
+                const avatarUrl = savedAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=667eea&color=fff&size=32`;
+                document.getElementById('navbarAvatar').src = avatarUrl;
+            }
+        });
+
+        async function handleLogout(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await signOut(auth);
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('authToken');
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Error during logout. Please try again.');
+                }
+            }
+        }
+
+        document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+    </script>
+    
     <script src="../assets/js/rack.js"></script>
     <script>
-        document.getElementById('menu-toggle')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('wrapper').classList.toggle('toggled');
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.getElementById('wrapper');
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const sidebarLinks = document.querySelectorAll('#sidebar-wrapper .list-group-item');
+
+            function toggleSidebar(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+                wrapper.classList.toggle('toggled');
+            }
+
+            if (menuToggle) {
+                menuToggle.addEventListener('click', toggleSidebar, true);
+            }
+
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    wrapper.classList.remove('toggled');
+                });
+            }
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 991) {
+                        wrapper.classList.remove('toggled');
+                    }
+                });
+            });
         });
     </script>
+    <script src="../assets/js/app.js"></script>
 </body>
 </html>
