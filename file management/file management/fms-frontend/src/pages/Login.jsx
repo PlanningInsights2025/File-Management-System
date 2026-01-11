@@ -46,6 +46,7 @@ const Login = () => {
       
       if (trimmedEmail === 'admin@company.com' && trimmedPassword === 'admin123') {
         localStorage.setItem('isAuthenticated', 'true');
+        window.dispatchEvent(new Event('authChanged'));
         navigate('/dashboard'); // Use SPA navigation to avoid 404
       } else {
         setError('Invalid credentials. Please try again.');

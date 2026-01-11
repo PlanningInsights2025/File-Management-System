@@ -22,9 +22,13 @@ function App() {
 
   useEffect(() => {
     // Check if user is authenticated
-    const authStatus = localStorage.getItem('isAuthenticated') === 'true';
-    setIsAuthenticated(authStatus);
-    setLoading(false);
+    const updateAuth = () => {
+      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
+      setLoading(false);
+    };
+    updateAuth();
+    window.addEventListener('authChanged', updateAuth);
+    return () => window.removeEventListener('authChanged', updateAuth);
   }, []);
 
   const ProtectedRoute = ({ children }) => {
