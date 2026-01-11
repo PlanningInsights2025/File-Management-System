@@ -17,13 +17,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [navigate]);
+  // Removed useEffect redirect to prevent login/dashboard blinking loop. Let App's ProtectedRoute handle redirection.
 
   const handleSubmit = async (e) => {
     e.preventDefault();
