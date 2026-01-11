@@ -52,8 +52,7 @@ const Login = () => {
       
       if (trimmedEmail === 'admin@company.com' && trimmedPassword === 'admin123') {
         localStorage.setItem('isAuthenticated', 'true');
-        // Reload the page to update App's authentication state
-        window.location.href = '/dashboard';
+        navigate('/dashboard'); // Use SPA navigation to avoid 404
       } else {
         setError('Invalid credentials. Please try again.');
       }
