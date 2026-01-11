@@ -349,7 +349,7 @@
   .card-header-blue {
     padding: 10px 8px;
     min-height: 64px;
-  }
+  /* removed stray closing brace */
   .card-header-blue .header-content {
     gap: 10px;
     padding-right: 54px;

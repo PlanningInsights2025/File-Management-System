@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as QRLib from 'qrcode.react';
+import QRCode from 'qrcode.react';
 import PrintIcon from '@mui/icons-material/Print';
 import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -169,17 +169,12 @@ const BarcodeGenerator = () => {
             </div>
 
             <div className="qr-code-container">
-              {(() => {
-                const QRComponent = QRLib.default || QRLib.QRCode || QRLib.QRCodeSVG || QRLib.QRCodeCanvas || QRLib;
-                return (
-                  <QRComponent
-                    value={`https://company.com/file/view?id=${fileId}&barcode=${barcodeData}`}
-                    size={200}
-                    level="H"
-                    includeMargin={true}
-                  />
-                );
-              })()}
+              <QRCode
+                value={`https://company.com/file/view?id=${fileId}&barcode=${barcodeData}`}
+                size={200}
+                level="H"
+                includeMargin={true}
+              />
             </div>
 
             <div className="barcode-info">
